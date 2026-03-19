@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    <link rel="stylesheet" href="../../styles/image-editor.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            padding-bottom: 70px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .profile-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+
+        .profile-header {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--border-color);
+            margin: 0 auto 15px;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .profile-bio {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 15px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .menu-section {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:active {
+            background-color: #f9f9f9;
+        }
+
+        .menu-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-icon {
+            font-size: 24px;
+            color: var(--accent-blue);
+        }
+
+        .menu-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .menu-arrow {
+            font-size: 20px;
+            color: #999;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #fff;
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 12px;
+            height: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--accent-blue);
+        }
+
+        .center-add-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .center-add-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-yellow);
+            border: 4px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .center-add-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        /* 悬浮发布菜单 - Neo Brutalism */
+        .publish-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .publish-modal-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .publish-menu {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-bg);
+            border-top: 6px solid var(--border-color);
+            padding: 20px;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .publish-modal-overlay.show .publish-menu {
+            bottom: 0;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.1s ease;
+        }
+
+        .menu-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        .menu-btn.btn-photo { background-color: #FF69B4; color: white; }
+        .menu-btn.btn-camera { background-color: var(--accent-blue); color: white; }
+        .menu-btn.btn-text { background-color: var(--accent-yellow); color: black; }
+        .menu-btn.btn-cancel { 
+            background-color: #e0e0e0; 
+            margin-top: 10px;
+            border: 4px dashed var(--border-color);
+            box-shadow: none;
+        }
+        
+        .menu-btn.btn-cancel:active {
+            transform: scale(0.98);
+        }
+
+        /* 写文字编辑弹窗样式 */
+        .text-editor-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 90%;
+            max-width: 500px;
+            background-color: #f5f5f0;
+            border: 6px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            opacity: 0;
+        }
+
+        .publish-modal-overlay.show .text-editor-card {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .editor-next-btn {
+            background-color: #ff6b9d;
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .editor-content {
+            position: relative;
+        }
+
+        .quote-icon {
+            font-size: 80px;
+            color: #e0e0e0;
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            font-family: Georgia, serif;
+        }
+
+        .editor-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            margin-top: 40px;
+            color: #333;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            min-height: 200px;
+            border: none;
+            background-color: transparent;
+            font-size: 16px;
+            color: #666;
+            resize: none;
+            outline: none;
+            font-family: 'AlibabaPuHuiTi', sans-serif;
+        }
+
+        .editor-textarea::placeholder {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <img id="profileAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="头像" class="profile-avatar">
+            <div id="profileName" class="profile-name">旅行者</div>
+            <div id="profileBio" class="profile-bio">热爱旅行，记录生活中的每一个美好瞬间 ✨</div>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="statFootprint">0</div>
+                    <div class="stat-label">足迹</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="statNotes">0</div>
+                    <div class="stat-label">笔记</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="statEncounters">0</div>
+                    <div class="stat-label">偶遇</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-item" onclick="window.location.href='/pages/mobile/edit-profile.html'">
+                <div class="menu-item-left">
+                    <i class="ri-user-settings-line menu-icon"></i>
+                    <span class="menu-text">编辑资料</span>
+                </div>
+                <i class="ri-arrow-right-s-line menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="window.location.href='/pages/mobile/secondme-memories.html'">
+                <div class="menu-item-left">
+                    <i class="ri-link menu-icon" style="color: var(--accent-green);"></i>
+                    <span class="menu-text">SecondMe 记忆</span>
+                </div>
+                <i class="ri-arrow-right-s-line menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="window.location.href='local-memories.html'">
+                <div class="menu-item-left">
+                    <i class="ri-brain-line menu-icon" style="color: var(--accent-orange);"></i>
+                    <span class="menu-text">本地记忆</span>
+                </div>
+                <i class="ri-arrow-right-s-line menu-arrow"></i>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <i class="ri-settings-3-line menu-icon"></i>
+                    <span class="menu-text">设置</span>
+                </div>
+                <i class="ri-arrow-right-s-line menu-arrow"></i>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <i class="ri-question-line menu-icon"></i>
+                    <span class="menu-text">帮助与反馈</span>
+                </div>
+                <i class="ri-arrow-right-s-line menu-arrow"></i>
+            </div>
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <i class="ri-information-line menu-icon"></i>
+                    <span class="menu-text">关于我们</span>
+                </div>
+                <i class="ri-arrow-right-s-line menu-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon"><i class="ri-map-pin-line"></i></span>
+            <span class="nav-text">地图</span>
+        </a>
+        <a href="/pages/mobile/spark.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-sparkling-line"></i></span>
+            <span class="nav-text">火花</span>
+        </a>
+        <div class="center-add-wrapper">
+            <div class="center-add-btn" onclick="togglePublishMenu()">
+                <i class="ri-add-line"></i>
+            </div>
+        </div>
+        <a href="/pages/mobile/notes.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-mail-line"></i></span>
+            <span class="nav-text">收信箱</span>
+        </a>
+        <a href="/pages/mobile/profile.html" class="nav-item active">
+            <span class="nav-icon"><i class="ri-user-line"></i></span>
+            <span class="nav-text">我的</span>
+        </a>
+    </div>
+
+    <!-- 发布悬浮窗 -->
+    <div class="publish-modal-overlay" id="publishModal">
+        <div class="publish-menu">
+            <div class="menu-btn btn-photo" onclick="selectFromGallery()">
+                <i class="ri-image-line"></i> 从相册选择
+            </div>
+            <div class="menu-btn btn-camera" onclick="openCamera()">
+                <i class="ri-camera-line"></i> 相机
+            </div>
+            <div class="menu-btn btn-text" onclick="openTextEditor()">
+                <i class="ri-edit-box-line"></i> 写文字
+            </div>
+            <div class="menu-btn btn-cancel" onclick="closePublishModal()">
+                取消
+            </div>
+        </div>
+    </div>
+
+    <!-- 写文字编辑弹窗 -->
+    <div class="publish-modal-overlay" id="textEditorModal" style="background-color: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+        <div class="text-editor-card">
+            <div class="editor-header">
+                <i class="ri-close-line" onclick="closeTextEditor()" style="font-size: 32px; cursor: pointer;"></i>
+                <button class="editor-next-btn" onclick="submitTextNote()">下一步</button>
+            </div>
+            <div class="editor-content">
+                <div class="quote-icon">"</div>
+                <div class="editor-title">写想法</div>
+                <textarea class="editor-textarea" id="textEditorInput" placeholder="说点什么或提个问题..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="galleryInput" accept="image/*" style="display: none;" onchange="handleGallerySelect(event)">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
+    <input type="file" id="editorImageInput" accept="image/*" multiple style="display: none;" onchange="handleEditorImageSelect(event)">
+
+    <!-- 图片编辑器悬浮卡片 -->
+    <div class="publish-modal-overlay" id="imageEditorModal">
+        <div class="image-editor-card">
+            <div class="editor-header">
+                <i class="ri-close-line" onclick="closeImageEditor()" style="font-size: 32px; cursor: pointer;"></i>
+                <button class="editor-next-btn" onclick="publishImageNote()">发布</button>
+            </div>
+            
+            <div class="editor-images-section" id="editorImagesSection">
+                <!-- 图片将动态添加在这里 -->
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">添加标题</label>
+                <input type="text" class="editor-input-field" placeholder="给你的笔记起个名字..." id="imageEditorTitle" required>
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">添加正文</label>
+                <textarea class="editor-textarea-field" placeholder="分享你的故事..." id="imageEditorContent" required></textarea>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">访问时间 <span style="color: #ff4444;">*</span></label>
+                <input type="datetime-local" class="editor-input-field" id="imageEditorVisitTime" required>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">心情 <span style="color: #ff4444;">*</span></label>
+                <select class="editor-input-field" id="imageEditorMood" required>
+                    <option value="">请选择心情...</option>
+                    <option value="开心">😊 开心</option>
+                    <option value="兴奋">🤩 兴奋</option>
+                    <option value="平静">😌 平静</option>
+                    <option value="感动">🥺 感动</option>
+                    <option value="惊讶">😲 惊讶</option>
+                    <option value="悲伤">😢 悲伤</option>
+                    <option value="愤怒">😠 愤怒</option>
+                    <option value="焦虑">😰 焦虑</option>
+                    <option value="疲惫">😫 疲惫</option>
+                    <option value="无聊">😑 无聊</option>
+                    <option value="恐惧">😨 恐惧</option>
+                    <option value="幸福">🥰 幸福</option>
+                    <option value="孤独">😔 孤独</option>
+                </select>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">地理位置 <span style="color: #ff4444;">*</span></label>
+                <input type="text" class="editor-input-field" placeholder="搜索或输入地点..." id="imageEditorLocation" required>
+            </div>
+            
+            <button class="editor-publish-btn" onclick="publishImageNote()">
+                <i class="ri-send-plane-fill"></i> 发布笔记
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="/js/auth-check.js"></script>
+    <script type="module" src="/js/services.js"></script>
+    <script type="module" src="/js/publish-modal.js"></script>
+    <script>
+        async function loadProfileData() {
+            const userId = (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id');
+            if (!userId) {
+                window.location.href = '/pages/mobile/login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${encodeURIComponent(userId)}`);
+                const result = await response.json();
+
+                if (!response.ok || !result.success || !result.data) {
+                    throw new Error(result.error || `HTTP ${response.status}`);
+                }
+
+                const user = result.data;
+                localStorage.setItem('current_user', JSON.stringify(user));
+                localStorage.setItem('user_info', JSON.stringify(user));
+
+                const avatar = user.avatar ? (user.avatar.startsWith('/') ? `${window.location.origin}${user.avatar}` : user.avatar) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+                document.getElementById('profileAvatar').src = avatar;
+                document.getElementById('profileName').textContent = user.nickname || user.username || '旅行者';
+                document.getElementById('profileBio').textContent = user.bio || '热爱旅行，记录生活中的每一个美好瞬间 ✨';
+                document.getElementById('statFootprint').textContent = Number(user.footprintCount || 0);
+                document.getElementById('statNotes').textContent = 0;
+                document.getElementById('statEncounters').textContent = 0;
+            } catch (error) {
+                console.error('❌ 加载个人资料失败:', error);
+            }
+        }
+
+        // 页面加载时刷新 SecondMe 状态
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfileData();
+            refreshSecondMeStatus();
+        });
+
+        // SecondMe 连接函数
+        function connectSecondMe() {
+            // 检查是否在移动设备模式
+            if (window.innerWidth < 768) {
+                alert('⚠️ SecondMe 授权需要在桌面模式下进行\n\n请关闭 Chrome DevTools 的设备模拟模式，或使用桌面浏览器访问。');
+                return;
+            }
+            SecondMeService.initiateLogin();
+        }
+        
+        // 刷新 SecondMe 连接状态
+        function refreshSecondMeStatus() {
+            const menuItem = document.querySelector('.menu-item[onclick="connectSecondMe()"]');
+            if (!menuItem) return;
+            
+            const isLoggedIn = SecondMeService.isLoggedIn();
+            const secondMeUser = SecondMeService.getCachedUserInfo();
+            
+            if (isLoggedIn && secondMeUser) {
+                // 已连接状态
+                menuItem.innerHTML = `
+                    <div class="menu-item-left">
+                        <i class="ri-check-line menu-icon" style="color: var(--accent-green);"></i>
+                        <div>
+                            <span class="menu-text">SecondMe 已连接</span>
+                            <div style="font-size: 12px; color: #666;">${secondMeUser.name || secondMeUser.email || '已登录'}</div>
+                        </div>
+                    </div>
+                    <i class="ri-arrow-right-s-line menu-arrow"></i>
+                `;
+                menuItem.onclick = openSecondMeModal;
+            } else {
+                // 未连接状态
+                menuItem.innerHTML = `
+                    <div class="menu-item-left">
+                        <i class="ri-link menu-icon" style="color: var(--accent-green);"></i>
+                        <span class="menu-text">连接 SecondMe</span>
+                    </div>
+                    <i class="ri-arrow-right-s-line menu-arrow"></i>
+                `;
+                menuItem.onclick = connectSecondMe;
+            }
+        }
+
+        // SecondMe 连接功能
+        function connectSecondMe() {
+            SecondMeService.initiateLogin();
+        }
+
+        // 打开 SecondMe 管理弹窗
+        function openSecondMeModal() {
+            const secondMeUser = SecondMeService.getCachedUserInfo();
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'publish-modal-overlay show';
+            overlay.id = 'secondMeModal';
+            overlay.style.cssText = 'display: flex; align-items: center; justify-content: center;';
+            overlay.innerHTML = `
+                <div style="background: #fff; border: 4px solid #000; border-radius: 16px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 8px 8px 0 rgba(0,0,0,1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 20px; font-weight: 900;">SecondMe 连接</h2>
+                        <button onclick="closeSecondMeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #E8F5E9; border: 3px solid #000; border-radius: 8px; margin-bottom: 20px;">
+                        <div style="width: 50px; height: 50px; background: var(--accent-green); border: 3px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">🤖</div>
+                        <div>
+                            <div style="font-weight: 900; font-size: 16px;">${secondMeUser?.name || '未设置昵称'}</div>
+                            <div style="font-size: 13px; color: #666;">${secondMeUser?.email || ''}</div>
+                            <div style="font-size: 12px; color: var(--accent-green); margin-top: 4px;">✅ 已连接</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="syncSecondMeMemories()" id="syncMemoriesBtn" style="width: 100%; padding: 14px; background: var(--accent-blue); color: #fff; border: 4px solid #000; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0 rgba(0,0,0,1); margin-bottom: 12px;">
+                        <i class="ri-refresh-line"></i> 同步记忆
+                    </button>
+                    
+                    <button onclick="disconnectSecondMe()" style="width: 100%; padding: 14px; background: #f5f5f5; color: #666; border: 4px solid #000; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                        断开连接
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.onclick = (e) => {
+                if (e.target === overlay) closeSecondMeModal();
+            };
+        }
+
+        function closeSecondMeModal() {
+            const modal = document.getElementById('secondMeModal');
+            if (modal) modal.remove();
+        }
+
+        // 同步 SecondMe 记忆
+        async function syncSecondMeMemories() {
+            const btn = document.getElementById('syncMemoriesBtn');
+            if (btn) {
+                btn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite;"></i> 同步中...';
+                btn.disabled = true;
+            }
+            
+            // 添加旋转动画
+            if (!document.getElementById('spinAnimation')) {
+                const style = document.createElement('style');
+                style.id = 'spinAnimation';
+                style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+
+            try {
+                const result = await SecondMeService.getSoftMemory('', 1, 200);
+                
+                if (result && result.list && result.list.length > 0) {
+                    Storage.saveSecondMeMemories(result.list);
+                    alert(`成功同步 ${result.list.length} 条记忆`);
+                    console.log('✅ SecondMe记忆同步成功:', result.list.length, '条');
+                } else {
+                    alert('没有找到 SecondMe 记忆数据');
+                }
+            } catch (error) {
+                console.error('❌ 同步SecondMe记忆失败:', error);
+                alert('同步失败：' + (error.message || '请重试'));
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<i class="ri-refresh-line"></i> 同步记忆';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // 断开 SecondMe 连接
+        function disconnectSecondMe() {
+            if (confirm('确定要断开 SecondMe 连接吗？')) {
+                SecondMeService.logout();
+            }
+        }
+    </script>
+</body>
+</html>

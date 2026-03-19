@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>本地记忆 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --accent-purple: #9C27B0;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            padding-bottom: 70px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .page-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+
+        .page-header {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-yellow);
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+        }
+
+        .back-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 900;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .add-memory-btn {
+            padding: 10px 20px;
+            background: var(--accent-green);
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .add-memory-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        .memories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .memory-card {
+            background: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 5px 5px 0 rgba(0,0,0,1);
+            padding: 20px;
+            position: relative;
+            transition: transform 0.1s, box-shadow 0.1s;
+            border-radius: 12px;
+        }
+
+        .memory-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 rgba(0,0,0,1);
+        }
+
+        .memory-card-header {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .memory-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #9C27B0, #E040FB);
+            border: 3px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .memory-icon.category-personal {
+            background: linear-gradient(135deg, #9C27B0, #E040FB);
+        }
+
+        .memory-icon.category-travel {
+            background: linear-gradient(135deg, #00E676, #00C853);
+        }
+
+        .memory-icon.category-food {
+            background: linear-gradient(135deg, #FF5C00, #FF8A00);
+        }
+
+        .memory-icon.category-hobby {
+            background: linear-gradient(135deg, #2B59FF, #5E92F3);
+        }
+
+        .memory-icon.category-work {
+            background: linear-gradient(135deg, #FFD600, #FFC400);
+        }
+
+        .memory-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .memory-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--accent-yellow);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .memory-title {
+            font-weight: 900;
+            font-size: 15px;
+            margin-bottom: 6px;
+            color: var(--text-color);
+        }
+
+        .memory-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .memory-date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        /* 弹窗样式 - 与原始项目一致 */
+        .nb-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .nb-modal {
+            background: #fff;
+            border: 6px solid #000;
+            box-shadow: 12px 12px 0 #000;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .nb-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 4px solid #000;
+            background: var(--accent-yellow);
+        }
+
+        .nb-modal-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .nb-modal-header p {
+            font-size: 12px;
+            color: #333;
+            font-weight: 400;
+            margin-top: 4px;
+            margin-bottom: 0;
+        }
+
+        .nb-modal-close {
+            background: #000;
+            color: var(--accent-yellow);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nb-modal-close:hover {
+            background: #333;
+        }
+
+        .nb-modal-body {
+            padding: 24px;
+        }
+
+        .nb-label {
+            display: block;
+            font-weight: 900;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .nb-textarea {
+            width: 100%;
+            padding: 16px;
+            border: 4px solid #000;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .nb-textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .ai-tip-box {
+            background: linear-gradient(135deg, #F3E5F5, #E8F5E9);
+            border: 3px solid #000;
+            padding: 14px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .ai-tip-box .tip-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .ai-tip-box .tip-title {
+            font-weight: 900;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .ai-tip-box .tip-text {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .nb-btn {
+            padding: 14px 20px;
+            border: 4px solid #000;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .nb-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .nb-btn-gray {
+            background: #f5f5f5;
+            color: #000;
+        }
+
+        .nb-btn-gray:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .nb-btn-primary {
+            background: var(--accent-green);
+            color: #000;
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+        }
+
+        .nb-btn-primary:hover:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .memory-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #FF5A5F;
+            color: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 900;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .memory-card:hover .memory-delete {
+            opacity: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border: 4px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 5px 5px 0 rgba(0,0,0,1);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #fff;
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 12px;
+            height: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--accent-blue);
+        }
+
+        .center-add-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .center-add-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-yellow);
+            border: 4px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .center-add-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="header-left">
+                <div class="back-btn" onclick="window.location.href='/pages/mobile/profile.html'">
+                    <i class="ri-arrow-left-line"></i>
+                </div>
+                <div class="page-title">本地记忆</div>
+            </div>
+            <button class="add-memory-btn" onclick="addMemory()">
+                <i class="ri-add-line"></i> 添加
+            </button>
+        </div>
+
+        <div class="memories-grid" id="memoriesGrid">
+            <!-- Memory cards will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon"><i class="ri-map-pin-line"></i></span>
+            <span class="nav-text">地图</span>
+        </a>
+        <a href="/pages/mobile/spark.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-sparkling-line"></i></span>
+            <span class="nav-text">火花</span>
+        </a>
+        <div class="center-add-wrapper">
+            <a href="#" class="center-add-btn" onclick="addMemory(); return false;">+</a>
+        </div>
+        <a href="/pages/mobile/notes.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-mail-line"></i></span>
+            <span class="nav-text">收信箱</span>
+        </a>
+        <a href="/pages/mobile/profile.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-user-line"></i></span>
+            <span class="nav-text">我的</span>
+        </a>
+    </div>
+
+    <script type="module" src="/js/auth-check.js"></script>
+    <script type="module" src="/js/services.js"></script>
+    <script>
+        let currentUserId = null;
+
+        // 分类图标和颜色映射
+        const CATEGORY_CONFIG = {
+            '个人信息': { icon: '🧠', class: 'category-personal' },
+            '学业经历': { icon: '📚', class: 'category-personal' },
+            '工作经验': { icon: '💼', class: 'category-work' },
+            '技术能力': { icon: '💻', class: 'category-work' },
+            '参赛经历': { icon: '🏆', class: 'category-hobby' },
+            '兴趣爱好': { icon: '🎯', class: 'category-hobby' },
+            '性格特点': { icon: '✨', class: 'category-personal' },
+            '职业目标': { icon: '🎯', class: 'category-work' },
+            '旅行偏好': { icon: '✈️', class: 'category-travel' },
+            '美食喜好': { icon: '🍜', class: 'category-food' },
+            '个人记忆': { icon: '🧠', class: 'category-personal' }
+        };
+
+        function getCategoryConfig(category) {
+            return CATEGORY_CONFIG[category] || { icon: '🧠', class: 'category-personal' };
+        }
+
+        // 渲染记忆列表
+        async function renderMemories() {
+            const grid = document.getElementById('memoriesGrid');
+            grid.innerHTML = '<div style="text-align:center;padding:40px;"><i class="ri-loader-4-line" style="font-size:32px;animation:spin 1s linear infinite;"></i><p>加载中...</p></div>';
+            
+            // 添加旋转动画
+            if (!document.getElementById('spinAnimation')) {
+                const style = document.createElement('style');
+                style.id = 'spinAnimation';
+                style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+
+            try {
+                currentUserId = Storage.getUserId();
+                const response = await MemoryAPI.getUserMemories(currentUserId);
+                const memories = response.success ? response.data : [];
+
+                if (memories.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🧠</div>
+                            <div class="empty-title">还没有本地记忆</div>
+                            <div class="empty-desc">点击添加按钮，粘贴你的个人信息，AI 会自动分类整理</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                memories.forEach(memory => {
+                    const config = getCategoryConfig(memory.category);
+                    const dateStr = memory.createTime ? new Date(memory.createTime).toLocaleDateString('zh-CN', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    }) : '';
+                    
+                    html += `
+                        <div class="memory-card">
+                            <button class="memory-delete" onclick="deleteMemory(${memory.id})" title="删除">✕</button>
+                            <div class="memory-card-header">
+                                <div class="memory-icon ${config.class}">${config.icon}</div>
+                                <div class="memory-content">
+                                    <div class="memory-category">${escapeHtml(memory.category)}</div>
+                                    <div class="memory-title">${escapeHtml(memory.title)}</div>
+                                    <div class="memory-text">${escapeHtml(memory.content)}</div>
+                                    <div class="memory-date">${dateStr}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error('加载记忆失败:', error);
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-title">加载失败</div>
+                        <div class="empty-desc">请检查网络连接后重试</div>
+                    </div>
+                `;
+            }
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // 打开添加记忆弹窗 - 使用原始项目样式
+        function addMemory() {
+            const overlay = document.createElement('div');
+            overlay.className = 'nb-modal-overlay';
+            overlay.id = 'addMemoryModal';
+            overlay.innerHTML = `
+                <div class="nb-modal" style="max-width:640px;">
+                    <div class="nb-modal-header">
+                        <div>
+                            <h2>添加记忆</h2>
+                            <p>粘贴你的个人信息，AI 会自动分类整理</p>
+                        </div>
+                        <button class="nb-modal-close" onclick="closeAddMemoryModal()">✕</button>
+                    </div>
+                    <div class="nb-modal-body">
+                        <label class="nb-label">记忆内容</label>
+                        <textarea class="nb-textarea" id="memoryInput" rows="10" placeholder="例如：我叫张三，今年25岁，来自北京。我喜欢旅游，去过日本、韩国。我是一名程序员，擅长Python和JavaScript..." style="min-height:200px;"></textarea>
+                        <div class="ai-tip-box" style="margin-top:12px;">
+                            <span class="tip-icon">✨</span>
+                            <div>
+                                <div class="tip-title">AI 智能分类</div>
+                                <div class="tip-text">点击保存后，AI 会自动将内容拆分成多个分类（如个人信息、兴趣爱好、工作经验等），并按标签整理展示。</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:12px;margin-top:16px;">
+                            <button class="nb-btn nb-btn-gray" style="flex:1;" onclick="closeAddMemoryModal()">取消</button>
+                            <button class="nb-btn nb-btn-primary" style="flex:1;" id="saveMemoryBtn" onclick="saveNewMemory()">
+                                <i class="ri-save-line"></i> 保存并分类
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => document.getElementById('memoryInput')?.focus(), 100);
+        }
+
+        function closeAddMemoryModal() {
+            const modal = document.getElementById('addMemoryModal');
+            if (modal) modal.remove();
+        }
+
+        // 保存新记忆（AI 分类）
+        async function saveNewMemory() {
+            const input = document.getElementById('memoryInput');
+            const content = input?.value?.trim();
+            
+            if (!content) {
+                alert('请填写记忆内容');
+                return;
+            }
+
+            const btn = document.getElementById('saveMemoryBtn');
+            if (btn) {
+                btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> AI 分类中...';
+                btn.disabled = true;
+            }
+
+            try {
+                console.log('🤖 开始 AI 分类...');
+                
+                // 调用后端 AI 分类 API
+                const classifyResponse = await MemoryAPI.classifyMemory(content);
+                
+                if (!classifyResponse.success) {
+                    throw new Error(classifyResponse.error || '分类失败');
+                }
+                
+                const classifiedItems = classifyResponse.data;
+                console.log('✅ AI 分类完成，数量:', classifiedItems.length);
+                
+                // 获取现有记忆
+                const existingResponse = await MemoryAPI.getUserMemories(currentUserId);
+                const existing = existingResponse.success ? existingResponse.data : [];
+                
+                // 智能追加：如果已存在相同分类，则追加内容；否则创建新卡片
+                let addedCount = 0;
+                let updatedCount = 0;
+                const toCreate = [];
+                
+                for (const item of classifiedItems) {
+                    // 查找是否已存在相同分类的记忆
+                    const existingMemory = existing.find(m => m.category === item.category);
+                    
+                    if (existingMemory) {
+                        // 追加到现有记忆
+                        await MemoryAPI.appendToMemory(existingMemory.id, item.content);
+                        updatedCount++;
+                        console.log(`✅ 追加到现有分类: ${item.category}`);
+                    } else {
+                        // 创建新记忆卡片
+                        toCreate.push(item);
+                        addedCount++;
+                        console.log(`✨ 创建新分类: ${item.category}`);
+                    }
+                }
+                
+                // 批量创建新记忆
+                if (toCreate.length > 0) {
+                    await MemoryAPI.createMemories(toCreate);
+                }
+                
+                closeAddMemoryModal();
+                await renderMemories();
+                
+                const message = updatedCount > 0 
+                    ? `已追加 ${updatedCount} 个分类，新增 ${addedCount} 个分类` 
+                    : `已新增 ${addedCount} 个分类`;
+                alert(message);
+                
+            } catch (error) {
+                console.error('❌ AI 分类失败:', error);
+                alert('AI 分类失败: ' + error.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<i class="ri-save-line"></i> 保存并分类';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // 删除记忆
+        async function deleteMemory(id) {
+            if (!confirm('确定要删除这条记忆吗？')) return;
+            
+            try {
+                await MemoryAPI.deleteMemory(id);
+                await renderMemories();
+                console.log('✅ 记忆已删除');
+            } catch (error) {
+                console.error('删除记忆失败:', error);
+                alert('删除失败，请重试');
+            }
+        }
+
+        // 将函数挂载到 window 对象，确保 HTML onclick 属性可以访问
+        window.addMemory = addMemory;
+        window.closeAddMemoryModal = closeAddMemoryModal;
+        window.saveNewMemory = saveNewMemory;
+        window.deleteMemory = deleteMemory;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMemories();
+        });
+    </script>
+</body>
+</html>

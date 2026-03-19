@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>笔记 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    <link rel="stylesheet" href="../../styles/image-editor.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            padding-bottom: 70px;
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .notes-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 90px;
+            box-sizing: border-box;
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 50px;
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0 20px 0 50px;
+            font-size: 16px;
+            font-family: inherit;
+            font-weight: bold;
+            box-sizing: border-box;
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #666;
+            pointer-events: none;
+        }
+
+        .note-card {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 15px;
+        }
+
+        .note-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        .note-content {
+            width: 100%;
+        }
+
+        .note-title {
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .note-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .note-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .note-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #fff;
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 12px;
+            height: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--accent-blue);
+        }
+
+        .center-add-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .center-add-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-yellow);
+            border: 4px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .center-add-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        /* 悬浮发布菜单 - Neo Brutalism */
+        .publish-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .publish-modal-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .publish-menu {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-bg);
+            border-top: 6px solid var(--border-color);
+            padding: 20px;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .publish-modal-overlay.show .publish-menu {
+            bottom: 0;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.1s ease;
+        }
+
+        .menu-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        .menu-btn.btn-photo { background-color: #FF69B4; color: white; }
+        .menu-btn.btn-camera { background-color: var(--accent-blue); color: white; }
+        .menu-btn.btn-text { background-color: var(--accent-yellow); color: black; }
+        .menu-btn.btn-cancel { 
+            background-color: #e0e0e0; 
+            margin-top: 10px;
+            border: 4px dashed var(--border-color);
+            box-shadow: none;
+        }
+        
+        .menu-btn.btn-cancel:active {
+            transform: scale(0.98);
+        }
+
+        /* 写文字编辑弹窗样式 */
+        .text-editor-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 90%;
+            max-width: 500px;
+            background-color: #f5f5f0;
+            border: 6px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            opacity: 0;
+        }
+
+        .publish-modal-overlay.show .text-editor-card {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .editor-next-btn {
+            background-color: #ff6b9d;
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .editor-content {
+            position: relative;
+        }
+
+        .quote-icon {
+            font-size: 80px;
+            color: #e0e0e0;
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            font-family: Georgia, serif;
+        }
+
+        .editor-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            margin-top: 40px;
+            color: #333;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            min-height: 200px;
+            border: none;
+            background-color: transparent;
+            font-size: 16px;
+            color: #666;
+            resize: none;
+            outline: none;
+            font-family: 'AlibabaPuHuiTi', sans-serif;
+        }
+
+        .editor-textarea::placeholder {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <script type="module" src="/js/auth-check.js"></script>
+    <div class="notes-container">
+        <div class="search-container">
+            <i class="ri-search-line search-icon"></i>
+            <input type="text" class="search-input" placeholder="搜索信件...">
+        </div>
+
+        <!-- 邮件列表容器 -->
+        <div id="mailsContainer">
+            <div class="loading-state" style="text-align: center; padding: 40px;">
+                <i class="ri-loader-4-line" style="font-size: 32px; animation: spin 1s linear infinite;"></i>
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            color: #666;
+            margin: 8px 0;
+        }
+        
+        .mail-type-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        
+        .mail-type-diary { background: var(--accent-green); color: #000; }
+        .mail-type-system { background: var(--accent-blue); color: #fff; }
+        .mail-type-friend { background: var(--accent-orange); color: #fff; }
+        .mail-type-ai { background: #9C27B0; color: #fff; }
+        
+        .unread-badge {
+            width: 8px;
+            height: 8px;
+            background: #FF6B6B;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        
+        .mail-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 3px solid var(--border-color);
+        }
+    </style>
+
+    <div class="bottom-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon"><i class="ri-map-pin-line"></i></span>
+            <span class="nav-text">地图</span>
+        </a>
+        <a href="/pages/mobile/spark.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-sparkling-line"></i></span>
+            <span class="nav-text">火花</span>
+        </a>
+        <div class="center-add-wrapper">
+            <div class="center-add-btn" onclick="togglePublishMenu()">
+                <i class="ri-add-line"></i>
+            </div>
+        </div>
+        <a href="/pages/mobile/notes.html" class="nav-item active">
+            <span class="nav-icon"><i class="ri-mail-line"></i></span>
+            <span class="nav-text">收信箱</span>
+        </a>
+        <a href="/pages/mobile/profile.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-user-line"></i></span>
+            <span class="nav-text">我的</span>
+        </a>
+    </div>
+
+    <!-- 发布悬浮窗 -->
+    <div class="publish-modal-overlay" id="publishModal">
+        <div class="publish-menu">
+            <div class="menu-btn btn-photo" onclick="selectFromGallery()">
+                <i class="ri-image-line"></i> 从相册选择
+            </div>
+            <div class="menu-btn btn-camera" onclick="openCamera()">
+                <i class="ri-camera-line"></i> 相机
+            </div>
+            <div class="menu-btn btn-text" onclick="openTextEditor()">
+                <i class="ri-edit-box-line"></i> 写文字
+            </div>
+            <div class="menu-btn btn-cancel" onclick="closePublishModal()">
+                取消
+            </div>
+        </div>
+    </div>
+
+    <!-- 写文字编辑弹窗 -->
+    <div class="publish-modal-overlay" id="textEditorModal" style="background-color: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+        <div class="text-editor-card">
+            <div class="editor-header">
+                <i class="ri-close-line" onclick="closeTextEditor()" style="font-size: 32px; cursor: pointer;"></i>
+                <button class="editor-next-btn" onclick="submitTextNote()">下一步</button>
+            </div>
+            <div class="editor-content">
+                <div class="quote-icon">"</div>
+                <div class="editor-title">写想法</div>
+                <textarea class="editor-textarea" id="textEditorInput" placeholder="说点什么或提个问题..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="galleryInput" accept="image/*" style="display: none;" onchange="handleGallerySelect(event)">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
+    <input type="file" id="editorImageInput" accept="image/*" multiple style="display: none;" onchange="handleEditorImageSelect(event)">
+
+    <!-- 图片编辑器悬浮卡片 -->
+    <div class="publish-modal-overlay" id="imageEditorModal">
+        <div class="image-editor-card">
+            <div class="editor-header">
+                <i class="ri-close-line" onclick="closeImageEditor()" style="font-size: 32px; cursor: pointer;"></i>
+                <button class="editor-next-btn" onclick="publishImageNote()">发布</button>
+            </div>
+            
+            <div class="editor-images-section" id="editorImagesSection">
+                <!-- 图片将动态添加在这里 -->
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">添加标题</label>
+                <input type="text" class="editor-input-field" placeholder="给你的笔记起个名字..." id="imageEditorTitle" required>
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">添加正文</label>
+                <textarea class="editor-textarea-field" placeholder="分享你的故事..." id="imageEditorContent" required></textarea>
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">访问时间 <span style="color: #ff4444;">*</span></label>
+                <input type="datetime-local" class="editor-input-field" id="imageEditorVisitTime" required>
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">心情 <span style="color: #ff4444;">*</span></label>
+                <select class="editor-input-field" id="imageEditorMood" required>
+                    <option value="">请选择心情...</option>
+                    <option value="开心">😊 开心</option>
+                    <option value="兴奋">🤩 兴奋</option>
+                    <option value="平静">😌 平静</option>
+                    <option value="感动">🥺 感动</option>
+                    <option value="惊讶">😲 惊讶</option>
+                    <option value="悲伤">😢 悲伤</option>
+                    <option value="愤怒">😠 愤怒</option>
+                    <option value="焦虑">😰 焦虑</option>
+                    <option value="疲惫">😫 疲惫</option>
+                    <option value="无聊">😑 无聊</option>
+                    <option value="恐惧">😨 恐惧</option>
+                    <option value="幸福">🥰 幸福</option>
+                    <option value="孤独">😔 孤独</option>
+                </select>
+            </div>
+            
+            <div class="editor-input-group">
+                <label class="editor-input-label">地理位置 <span style="color: #ff4444;">*</span></label>
+                <input type="text" class="editor-input-field" placeholder="搜索或输入地点..." id="imageEditorLocation" required>
+            </div>
+            
+            <button class="editor-publish-btn" onclick="publishImageNote()">
+                <i class="ri-send-plane-fill"></i> 发布笔记
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="../../js/publish-modal.js"></script>
+    
+    <script>
+        const API_BASE = '/api';
+        let currentUserId = null;
+        let allMails = [];
+        
+        // 获取当前用户ID
+        function getUserId() {
+            if (!currentUserId) {
+                currentUserId = (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id');
+            }
+            return currentUserId;
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userId = getUserId();
+            if (userId) {
+                await loadMails(userId);
+            } else {
+                showEmptyState('未登录', '请先登录以查看你的收信箱');
+            }
+            
+            // 搜索功能
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    filterMails(e.target.value);
+                });
+            }
+        });
+        
+        // 加载邮件列表
+        async function loadMails(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/mails/user/${userId}`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || '加载邮件失败');
+                }
+                
+                allMails = result.data || [];
+                renderMails(allMails);
+                
+            } catch (error) {
+                console.error('❌ 加载邮件失败:', error);
+                showEmptyState('加载失败', '无法加载邮件列表，请重试');
+            }
+        }
+        
+        // 渲染邮件列表
+        function renderMails(mails) {
+            const container = document.getElementById('mailsContainer');
+            
+            if (mails.length === 0) {
+                showEmptyState('收信箱是空的', '完成旅行后，你的AI分身会给你写信哦~');
+                return;
+            }
+            
+            let html = '';
+            
+            mails.forEach(mail => {
+                const typeIcon = getMailTypeIcon(mail.mailType);
+                const typeClass = getMailTypeClass(mail.mailType);
+                const typeName = getMailTypeName(mail.mailType);
+                
+                html += `
+                    <div class="note-card" onclick="openMail(${mail.id})">
+                        <div class="note-content">
+                            ${mail.imageUrl ? `<img src="${mail.imageUrl}" class="mail-image" alt="邮件图片">` : ''}
+                            <div class="note-title">
+                                <span class="mail-type-tag ${typeClass}">${typeName}</span>
+                                ${typeIcon} ${escapeHtml(mail.title)}
+                                ${!mail.isRead ? '<span class="unread-badge"></span>' : ''}
+                            </div>
+                            <div class="note-text">${escapeHtml(mail.content.substring(0, 100))}${mail.content.length > 100 ? '...' : ''}</div>
+                            ${getRecommendationPreviewHtml(mail)}
+                            <div class="note-meta">
+                                <div class="note-location">
+                                    <i class="ri-time-line"></i>
+                                    <span>${formatTime(mail.createdAt)}</span>
+                                </div>
+                                <span>${escapeHtml(getSenderDisplayName(mail))}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function getRecommendationPreviewHtml(mail) {
+            const recommended = mail?.extraData?.recommended;
+            if (!Array.isArray(recommended) || recommended.length === 0) {
+                return '';
+            }
+
+            const names = recommended
+                .slice(0, 2)
+                .map(item => String(item?.name || '').trim())
+                .filter(Boolean);
+
+            if (names.length === 0) {
+                return '';
+            }
+
+            return `<div class="note-text" style="margin-top:6px;color:#1565c0;font-weight:600;">推荐：${escapeHtml(names.join('、'))}</div>`;
+        }
+        
+        // 筛选邮件
+        function filterMails(keyword) {
+            if (!keyword) {
+                renderMails(allMails);
+                return;
+            }
+            
+            const filtered = allMails.filter(mail => 
+                mail.title.includes(keyword) || 
+                mail.content.includes(keyword)
+            );
+            renderMails(filtered);
+        }
+        
+        // 打开邮件详情
+        async function openMail(mailId) {
+            try {
+                // 标记已读
+                await fetch(`${API_BASE}/mails/${mailId}/read`, { method: 'PUT' });
+
+                // 更新列表中的已读状态
+                const mailIndex = allMails.findIndex(m => m.id === mailId);
+                if (mailIndex !== -1) {
+                    allMails[mailIndex].isRead = true;
+                }
+
+                window.location.href = `/pages/mobile/note-detail.html?id=${encodeURIComponent(mailId)}`;
+                
+            } catch (error) {
+                console.error('❌ 获取邮件失败:', error);
+                alert('获取邮件失败: ' + error.message);
+            }
+        }
+        
+        // 显示空状态
+        function showEmptyState(title, desc) {
+            const container = document.getElementById('mailsContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="ri-mail-line"></i>
+                    <p style="font-size: 18px; font-weight: 700;">${title}</p>
+                    <p>${desc}</p>
+                </div>
+            `;
+        }
+        
+        // 获取邮件类型图标
+        function getMailTypeIcon(type) {
+            const icons = {
+                'diary': '📝',
+                'system': '📢',
+                'friend': '💌',
+                'ai_exploration': '🤖',
+                'recommendation': '✨'
+            };
+            return icons[type] || '📧';
+        }
+        
+        // 获取邮件类型样式类
+        function getMailTypeClass(type) {
+            const classes = {
+                'diary': 'mail-type-diary',
+                'system': 'mail-type-system',
+                'friend': 'mail-type-friend',
+                'ai_exploration': 'mail-type-ai',
+                'recommendation': 'mail-type-ai'
+            };
+            return classes[type] || 'mail-type-system';
+        }
+        
+        // 获取邮件类型名称
+        function getMailTypeName(type) {
+            const names = {
+                'diary': '旅行日记',
+                'system': '系统通知',
+                'friend': '好友来信',
+                'ai_exploration': 'AI探索',
+                'recommendation': '推荐'
+            };
+            return names[type] || '邮件';
+        }
+
+        // 获取发件人显示名
+        function getSenderDisplayName(mail) {
+            if (mail?.extraData?.senderName) {
+                return mail.extraData.senderName;
+            }
+
+            if (mail?.senderType === 'ai') return 'AI分身';
+            if (mail?.senderType === 'system') return '系统';
+            return '好友';
+        }
+        
+        // 格式化时间
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+            
+            return date.toLocaleDateString();
+        }
+        
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>旅行火花 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    <link rel="stylesheet" href="../../styles/image-editor.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --accent-purple: #9C27B0;
+            --accent-red: #FF6B6B;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            padding-bottom: 70px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .spark-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+
+        .page-header {
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: #000000;
+            text-align: center;
+        }
+
+        /* 火花加载状态 */
+        .sparks-loading,
+        .sparks-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            background: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+        }
+
+        .sparks-loading i {
+            font-size: 48px;
+            color: var(--accent-yellow);
+            margin-bottom: 16px;
+        }
+
+        .sparks-empty i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .sparks-empty p {
+            font-size: 16px;
+            color: #666;
+            margin: 8px 0;
+        }
+
+        /* 火花列表 */
+        .sparks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 火花卡片 */
+        .spark-card {
+            background: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.15s;
+        }
+
+        .spark-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 rgba(0,0,0,1);
+        }
+
+        .spark-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+            border-bottom: 3px solid var(--border-color);
+        }
+
+        .spark-user {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .spark-username {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--text-color);
+        }
+
+        .spark-location {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .spark-content {
+            background: #FFF3E0;
+            border: 3px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .spark-tag {
+            display: inline-block;
+            background: var(--accent-red);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .spark-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .spark-reason {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .spark-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .spark-actions button {
+            flex: 1;
+            padding: 12px;
+            background: #fff;
+            border: 3px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .spark-actions button:hover {
+            background: var(--accent-yellow);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+        }
+
+        /* 对话弹窗 */
+        .conversation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .conversation-content {
+            background: #fff;
+            border: 6px solid var(--border-color);
+            box-shadow: 12px 12px 0 rgba(0,0,0,1);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .conversation-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 4px solid var(--border-color);
+            background: var(--accent-yellow);
+        }
+
+        .conversation-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .conversation-close {
+            background: var(--border-color);
+            color: var(--accent-yellow);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .conversation-body {
+            padding: 24px;
+        }
+
+        .conversation-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .message-item {
+            background: #f9f9f9;
+            border: 3px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .message-sender {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--accent-blue);
+            margin-bottom: 6px;
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .conversation-spark {
+            background: #FFF3E0;
+            border: 3px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #fff;
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+            font-size: 12px;
+            height: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--accent-blue);
+        }
+
+        .center-add-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .center-add-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-yellow);
+            border: 4px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .center-add-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* 悬浮发布菜单 - Neo Brutalism */
+        .publish-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .publish-modal-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .publish-menu {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-bg);
+            border-top: 6px solid var(--border-color);
+            padding: 20px;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .publish-modal-overlay.show .publish-menu {
+            bottom: 0;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.1s ease;
+        }
+
+        .menu-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        .menu-btn.btn-photo { background-color: #FF69B4; color: white; }
+        .menu-btn.btn-camera { background-color: var(--accent-blue); color: white; }
+        .menu-btn.btn-text { background-color: var(--accent-yellow); color: black; }
+        .menu-btn.btn-cancel { 
+            background-color: #e0e0e0; 
+            margin-top: 10px;
+            border: 4px dashed var(--border-color);
+            box-shadow: none;
+        }
+        
+        .menu-btn.btn-cancel:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <script type="module" src="/js/auth-check.js"></script>
+    
+    <div class="spark-container">
+        <h1 class="page-header">✨ 旅行火花</h1>
+
+        <div id="sparksContainer">
+            <div class="sparks-loading">
+                <i class="ri-loader-4-line animate-spin"></i>
+                <span>加载火花中...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon"><i class="ri-map-pin-line"></i></span>
+            <span class="nav-text">地图</span>
+        </a>
+        <a href="/pages/mobile/spark.html" class="nav-item active">
+            <span class="nav-icon"><i class="ri-sparkling-line"></i></span>
+            <span class="nav-text">火花</span>
+        </a>
+        <div class="center-add-wrapper">
+            <div class="center-add-btn" onclick="togglePublishMenu()">
+                <i class="ri-add-line"></i>
+            </div>
+        </div>
+        <a href="/pages/mobile/notes.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-mail-line"></i></span>
+            <span class="nav-text">收信箱</span>
+        </a>
+        <a href="/pages/mobile/profile.html" class="nav-item">
+            <span class="nav-icon"><i class="ri-user-line"></i></span>
+            <span class="nav-text">我的</span>
+        </a>
+    </div>
+
+    <!-- 发布悬浮窗 -->
+    <div class="publish-modal-overlay" id="publishModal">
+        <div class="publish-menu">
+            <div class="menu-btn btn-photo" onclick="selectFromGallery()">
+                <i class="ri-image-line"></i> 从相册选择
+            </div>
+            <div class="menu-btn btn-camera" onclick="openCamera()">
+                <i class="ri-camera-line"></i> 相机
+            </div>
+            <div class="menu-btn btn-text" onclick="openTextEditor()">
+                <i class="ri-edit-box-line"></i> 写文字
+            </div>
+            <div class="menu-btn btn-cancel" onclick="closePublishModal()">
+                取消
+            </div>
+        </div>
+    </div>
+
+    <!-- 写文字编辑弹窗 -->
+    <div class="publish-modal-overlay" id="textEditorModal" style="background-color: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+        <div class="text-editor-card">
+            <div class="editor-header">
+                <i class="ri-close-line" onclick="closeTextEditor()" style="font-size: 32px; cursor: pointer;"></i>
+                <button class="editor-next-btn" onclick="submitTextNote()">下一步</button>
+            </div>
+            <div class="editor-content">
+                <div class="quote-icon">"</div>
+                <div class="editor-title">写想法</div>
+                <textarea class="editor-textarea" id="textEditorInput" placeholder="说点什么或提个问题..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="galleryInput" accept="image/*" style="display: none;" onchange="handleGallerySelect(event)">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" onchange="handleCameraCapture(event)">
+    <input type="file" id="editorImageInput" accept="image/*" multiple style="display: none;" onchange="handleEditorImageSelect(event)">
+
+    <!-- 图片编辑器悬浮卡片 -->
+    <div class="publish-modal-overlay" id="imageEditorModal">
+        <div class="image-editor-card">
+            <div class="editor-header">
+                <i class="ri-close-line" onclick="closeImageEditor()" style="font-size: 32px; cursor: pointer;"></i>
+                <button class="editor-next-btn" onclick="publishImageNote()">发布</button>
+            </div>
+
+            <div class="editor-images-section" id="editorImagesSection">
+                <!-- 图片将动态添加在这里 -->
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">添加标题</label>
+                <input type="text" class="editor-input-field" placeholder="给你的笔记起个名字..." id="imageEditorTitle" required>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">添加正文</label>
+                <textarea class="editor-textarea-field" placeholder="分享你的故事..." id="imageEditorContent" required></textarea>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">访问时间 <span style="color: #ff4444;">*</span></label>
+                <input type="datetime-local" class="editor-input-field" id="imageEditorVisitTime" required>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">心情 <span style="color: #ff4444;">*</span></label>
+                <select class="editor-input-field" id="imageEditorMood" required>
+                    <option value="">请选择心情...</option>
+                    <option value="开心">😊 开心</option>
+                    <option value="兴奋">🤩 兴奋</option>
+                    <option value="平静">😌 平静</option>
+                    <option value="感动">🥺 感动</option>
+                    <option value="惊讶">😲 惊讶</option>
+                    <option value="悲伤">😢 悲伤</option>
+                    <option value="愤怒">😠 愤怒</option>
+                    <option value="焦虑">😰 焦虑</option>
+                    <option value="疲惫">😫 疲惫</option>
+                    <option value="无聊">😑 无聊</option>
+                    <option value="恐惧">😨 恐惧</option>
+                    <option value="幸福">🥰 幸福</option>
+                    <option value="孤独">😔 孤独</option>
+                </select>
+            </div>
+
+            <div class="editor-input-group">
+                <label class="editor-input-label">地理位置 <span style="color: #ff4444;">*</span></label>
+                <input type="text" class="editor-input-field" placeholder="搜索或输入地点..." id="imageEditorLocation" required>
+            </div>
+
+            <button class="editor-publish-btn" onclick="publishImageNote()">
+                <i class="ri-send-plane-fill"></i> 发布笔记
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="../../js/publish-modal.js"></script>
+    <script>
+        const API_BASE = '/api';
+        let currentUserId = null;
+        let currentChatroomId = null;
+
+        // 获取当前用户ID
+        function getUserId() {
+            if (!currentUserId) {
+                currentUserId = (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id');
+            }
+            return currentUserId;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userId = getUserId();
+            if (userId) {
+                await loadChatrooms(userId);
+            } else {
+                showEmptyState('未登录', '请先登录以查看你的聊天室');
+            }
+        });
+
+        // 加载聊天室列表
+        async function loadChatrooms(userId) {
+            try {
+                const response = await fetch(`${API_BASE}/chatrooms/user/${userId}`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || '加载聊天室失败');
+                }
+                
+                const chatrooms = result.data || [];
+                renderChatrooms(chatrooms);
+                
+            } catch (error) {
+                console.error('❌ 加载聊天室失败:', error);
+                showEmptyState('加载失败', '无法加载聊天室列表，请重试');
+            }
+        }
+
+        // 渲染聊天室列表
+        function renderChatrooms(chatrooms) {
+            const container = document.getElementById('sparksContainer');
+            
+            if (chatrooms.length === 0) {
+                showEmptyState('还没有聊天室', '发布一条帖子，与附近的旅行者产生火花吧！');
+                return;
+            }
+            
+            let html = '<div class="sparks-list">';
+            
+            chatrooms.forEach(chatroom => {
+                const hasUnread = chatroom.unreadCount > 0;
+                
+                html += `
+                    <div class="spark-card" onclick="openChatroom(${chatroom.id})" style="cursor: pointer;">
+                        <div class="spark-header">
+                            <div class="spark-user">
+                                <div class="spark-username">
+                                    ${escapeHtml(chatroom.chatroomName)}
+                                    ${hasUnread ? `<span style="background: #FF6B6B; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 8px;">${chatroom.unreadCount}</span>` : ''}
+                                </div>
+                                <div class="spark-location">
+                                    <i class="ri-map-pin-line"></i>
+                                    ${escapeHtml(chatroom.city)} · ${chatroom.memberCount} 人
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; color: #999;">
+                                ${formatTime(chatroom.lastActiveAt)}
+                            </div>
+                        </div>
+                        
+                        ${chatroom.lastMessage ? `
+                        <div class="spark-content" style="background: #f9f9f9;">
+                            <p class="spark-text" style="font-weight: 500; font-size: 14px;">
+                                <span style="color: var(--accent-blue);">${escapeHtml(chatroom.lastSender || '系统')}:</span>
+                                ${escapeHtml(chatroom.lastMessage.substring(0, 50))}${chatroom.lastMessage.length > 50 ? '...' : ''}
+                            </p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="spark-actions">
+                            <button onclick="event.stopPropagation(); openChatroom(${chatroom.id})">
+                                <i class="ri-chat-4-line"></i> 进入聊天
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 显示空状态
+        function showEmptyState(title, desc) {
+            const container = document.getElementById('sparksContainer');
+            container.innerHTML = `
+                <div class="sparks-empty">
+                    <i class="ri-sparkling-line"></i>
+                    <p style="font-size: 18px; font-weight: 700;">${title}</p>
+                    <p>${desc}</p>
+                    <button onclick="window.location.href='/'" style="margin-top: 16px; padding: 12px 24px; background: var(--accent-yellow); border: 3px solid var(--border-color); border-radius: 8px; font-weight: 700; cursor: pointer;">
+                        去发帖
+                    </button>
+                </div>
+            `;
+        }
+
+        // 打开聊天室
+        async function openChatroom(chatroomId) {
+            currentChatroomId = chatroomId;
+            
+            try {
+                const response = await fetch(`${API_BASE}/chatrooms/${chatroomId}/detail`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || '获取聊天室失败');
+                }
+                
+                const { chatroom, members, messages } = result.data;
+                
+                // 标记已读
+                fetch(`${API_BASE}/chatrooms/${chatroomId}/read`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                showChatroomModal(chatroom, members, messages);
+                
+            } catch (error) {
+                console.error('❌ 获取聊天室失败:', error);
+                alert('获取聊天室失败: ' + error.message);
+            }
+        }
+
+        // 显示聊天室弹窗
+        function showChatroomModal(chatroom, members, messages) {
+            const messagesHtml = messages.map(msg => {
+                const isSystem = msg.messageType === 'system';
+                const isMe = msg.userId == getUserId() && !msg.isAiAgent;
+                const isAi = msg.isAiAgent;
+                
+                if (isSystem) {
+                    return `
+                        <div style="text-align: center; padding: 8px; color: #999; font-size: 12px;">
+                            ${escapeHtml(msg.content)}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="message-item" style="${isMe ? 'background: #E3F2FD; margin-left: 20%;' : isAi ? 'background: #FFF3E0; margin-right: 20%;' : 'margin-right: 20%;'}">
+                        <div class="message-sender" style="display: flex; align-items: center; gap: 6px;">
+                            ${escapeHtml(msg.nickname || '用户')}
+                            ${isAi ? '<span style="background: var(--accent-purple); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 10px;">AI分身</span>' : ''}
+                            ${isMe ? '<span style="background: var(--accent-blue); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 10px;">我</span>' : ''}
+                        </div>
+                        <div class="message-text">${escapeHtml(msg.content)}</div>
+                        <div style="font-size: 10px; color: #999; margin-top: 4px;">${formatTime(msg.createdAt)}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            const membersHtml = members.map(m => `
+                <span style="display: inline-flex; align-items: center; gap: 4px; background: #f0f0f0; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+                    ${escapeHtml(m.nickname)}
+                    ${m.isCreator ? '👑' : ''}
+                </span>
+            `).join('');
+            
+            const modalHtml = `
+                <div class="conversation-modal" id="chatroomModal">
+                    <div class="conversation-content" onclick="event.stopPropagation()" style="display: flex; flex-direction: column; max-height: 90vh;">
+                        <div class="conversation-header">
+                            <div>
+                                <h2 style="margin-bottom: 4px;">${escapeHtml(chatroom.chatroomName)}</h2>
+                                <div style="font-size: 12px; font-weight: normal;">${chatroom.memberCount} 人</div>
+                            </div>
+                            <button class="conversation-close" onclick="closeChatroomModal()">✕</button>
+                        </div>
+                        
+                        <div style="padding: 12px 24px; border-bottom: 2px solid #eee; display: flex; flex-wrap: wrap; gap: 8px;">
+                            ${membersHtml}
+                        </div>
+                        
+                        <div class="conversation-body" id="messagesContainer" style="flex: 1; overflow-y: auto; max-height: 400px;">
+                            <div class="conversation-messages" id="messagesList">
+                                ${messagesHtml}
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 16px 24px; border-top: 4px solid var(--border-color); display: flex; gap: 12px;">
+                            <input type="text" id="messageInput" placeholder="说点什么..." 
+                                style="flex: 1; padding: 12px; border: 3px solid var(--border-color); border-radius: 8px; font-size: 14px;"
+                                onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button onclick="sendMessage()" 
+                                style="padding: 12px 20px; background: var(--accent-blue); color: #fff; border: 3px solid var(--border-color); border-radius: 8px; font-weight: 700; cursor: pointer;">
+                                发送
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                const container = document.getElementById('messagesContainer');
+                if (container) container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content || !currentChatroomId) return;
+            
+            input.value = '';
+            
+            try {
+                // 1. 发送用户消息
+                const response = await fetch(`${API_BASE}/chatrooms/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chatroomId: currentChatroomId,
+                        content,
+                        isAiAgent: false
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 添加消息到列表
+                    const user = JSON.parse(localStorage.getItem('current_user') || '{}');
+                    appendMessage({
+                        nickname: user.nickname || '我',
+                        content,
+                        isAiAgent: false,
+                        userId: getUserId(),
+                        createdAt: new Date().toISOString()
+                    });
+                    
+                    // 2. 触发 AI 回复
+                    const aiResponse = await fetch(`${API_BASE}/chatrooms/generate-responses`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chatroomId: currentChatroomId,
+                            triggerMessage: content
+                        })
+                    });
+                    
+                    const aiResult = await aiResponse.json();
+                    
+                    if (aiResult.success && aiResult.data.responses) {
+                        // 延迟显示 AI 回复，模拟打字效果
+                        for (const resp of aiResult.data.responses) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            appendMessage(resp);
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ 发送消息失败:', error);
+                alert('发送失败: ' + error.message);
+            }
+        }
+
+        // 添加消息到列表
+        function appendMessage(msg) {
+            const messagesList = document.getElementById('messagesList');
+            if (!messagesList) return;
+            
+            const isMe = msg.userId == getUserId() && !msg.isAiAgent;
+            const isAi = msg.isAiAgent;
+            
+            const messageHtml = `
+                <div class="message-item" style="${isMe ? 'background: #E3F2FD; margin-left: 20%;' : isAi ? 'background: #FFF3E0; margin-right: 20%;' : 'margin-right: 20%;'}">
+                    <div class="message-sender" style="display: flex; align-items: center; gap: 6px;">
+                        ${escapeHtml(msg.nickname || '用户')}
+                        ${isAi ? '<span style="background: var(--accent-purple); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 10px;">AI分身</span>' : ''}
+                        ${isMe ? '<span style="background: var(--accent-blue); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 10px;">我</span>' : ''}
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.content)}</div>
+                    <div style="font-size: 10px; color: #999; margin-top: 4px;">${formatTime(msg.createdAt)}</div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHtml);
+            
+            // 滚动到底部
+            const container = document.getElementById('messagesContainer');
+            if (container) container.scrollTop = container.scrollHeight;
+        }
+
+        // 关闭聊天室弹窗
+        function closeChatroomModal() {
+            const modal = document.getElementById('chatroomModal');
+            if (modal) modal.remove();
+            currentChatroomId = null;
+            
+            // 刷新列表
+            const userId = getUserId();
+            if (userId) loadChatrooms(userId);
+        }
+
+        // 格式化时间
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+            
+            return date.toLocaleDateString();
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+    </script>
+</body>
+</html>

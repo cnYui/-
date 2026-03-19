@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>信件详情 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #fff;
+            border-bottom: var(--border-width) solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--accent-yellow);
+            box-shadow: 2px 2px 0 #000;
+            transition: all 0.2s;
+            margin-right: 15px;
+        }
+
+        .back-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0 #000;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 900;
+            margin: 0;
+            flex: 1;
+            text-align: center;
+            margin-right: 55px; /* Offset for back button to keep title centered */
+        }
+
+        .detail-container {
+            padding: 80px 20px 40px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .letter-card {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 8px 8px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .letter-image-container {
+            width: 100%;
+            height: 300px;
+            border-bottom: 4px solid var(--border-color);
+            position: relative;
+        }
+
+        .letter-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .letter-content {
+            padding: 25px;
+        }
+
+        .mail-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #eee;
+        }
+
+        .mail-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--primary-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .route-party {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .party-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .party-name {
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .route-arrow {
+            color: var(--accent-blue);
+            font-size: 20px;
+            padding: 0 10px;
+        }
+
+        .letter-title {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .letter-meta-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            background-color: var(--primary-bg);
+            box-shadow: 2px 2px 0 var(--border-color);
+        }
+
+        .tag-location { background-color: var(--accent-green); }
+        .tag-time { background-color: var(--accent-yellow); }
+        .tag-mood { background-color: var(--accent-orange); color: white; }
+
+        .letter-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+            border-top: 2px dashed #eee;
+            padding-top: 20px;
+        }
+
+        .stamp-decoration {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border: 2px dashed var(--border-color);
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(15deg);
+            font-weight: bold;
+            font-size: 10px;
+            color: var(--accent-blue);
+        }
+
+        .stamp-icon {
+            font-size: 24px;
+        }
+
+        /* 生成图片按钮 */
+        .generate-image-btn {
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: #fff;
+            border: 4px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .generate-image-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,1);
+        }
+
+        .generate-image-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .generate-image-btn.generating {
+            background-color: var(--accent-orange);
+        }
+
+        /* 图片占位符 */
+        .image-placeholder {
+            width: 100%;
+            height: 300px;
+            background-color: var(--primary-bg);
+            border: 4px dashed var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #999;
+        }
+
+        .image-placeholder i {
+            font-size: 48px;
+        }
+
+        .image-placeholder span {
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="back-btn" onclick="history.back()">
+            <i class="ri-arrow-left-line"></i>
+        </div>
+        <h1 class="header-title">信件详情</h1>
+    </header>
+
+    <div class="detail-container">
+        <div class="letter-card">
+            <div class="letter-content">
+                <div class="mail-header">
+                    <h2 class="letter-title" id="detailTitle">标题加载中...</h2>
+                    <div class="mail-route">
+                        <div class="route-party">
+                            <span class="party-label">From</span>
+                            <span class="party-name" id="detailSender">发件人</span>
+                        </div>
+                        <i class="ri-arrow-right-line route-arrow"></i>
+                        <div class="route-party">
+                            <span class="party-label">To</span>
+                            <span class="party-name" id="detailReceiver">收件人</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="letter-text" id="detailText" style="border-top: none; padding-top: 0;">内容加载中...</div>
+            </div>
+
+            <!-- 图片区域：默认隐藏，生成后显示 -->
+            <div class="letter-image-container" id="imageContainer" style="border-top: 4px solid var(--border-color); border-bottom: none; display: none;">
+                <img id="detailImage" src="" alt="旅行图片" class="letter-image">
+                <div class="stamp-decoration">
+                    <i class="ri-mail-send-line stamp-icon"></i>
+                    <span>已送达</span>
+                </div>
+            </div>
+
+            <!-- 图片占位符：未生成时显示 -->
+            <div class="image-placeholder" id="imagePlaceholder" style="margin: 20px;">
+                <i class="ri-image-add-line"></i>
+                <span>点击下方按钮生成旅行图片</span>
+            </div>
+
+            <!-- 生成图片按钮 -->
+            <div style="padding: 0 20px 20px;">
+                <button class="generate-image-btn" id="generateImageBtn" onclick="generateTravelImage()">
+                    <i class="ri-magic-line"></i>
+                    <span>生成旅行图片</span>
+                </button>
+            </div>
+
+            <div class="letter-content" style="padding-top: 20px;">
+                <div class="letter-meta-group" style="margin-bottom: 0;">
+                    <div class="meta-tag tag-time">
+                        <i class="ri-time-line"></i>
+                        <span id="detailTime">时间</span>
+                    </div>
+                    <div class="meta-tag tag-location">
+                        <i class="ri-map-pin-line"></i>
+                        <span id="detailLocation">地点</span>
+                    </div>
+                    <div class="meta-tag tag-mood">
+                        <span id="detailMood">😊 开心</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let currentNoteData = null;
+        let currentNoteId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentNoteId = urlParams.get('id');
+
+            if (!currentNoteId) {
+                alert('缺少信件ID');
+                history.back();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/mails/${encodeURIComponent(currentNoteId)}`);
+                const result = await response.json();
+
+                if (!response.ok || !result.success || !result.data) {
+                    throw new Error(result?.error || '加载信件详情失败');
+                }
+
+                currentNoteData = mapMailToDetailData(result.data);
+                renderNoteDetail(currentNoteData);
+            } catch (error) {
+                console.error('❌ 加载信件详情失败:', error);
+                alert('加载信件详情失败: ' + error.message);
+                history.back();
+            }
+        });
+
+        function mapMailToDetailData(mail) {
+            const destination = mail?.extraData?.destination || '未知地点';
+            const sender = getSenderDisplayName(mail);
+            return {
+                id: mail.id,
+                title: mail.title || '信件详情',
+                sender,
+                receiver: getReceiverDisplayName(),
+                text: mail.content || '',
+                imageUrl: mail.imageUrl || null,
+                location: destination,
+                time: formatDateTime(mail.createdAt),
+                mood: '📝 旅行日记',
+                destination,
+                visitedPlaces: Array.isArray(mail?.extraData?.visitedPlaces) ? mail.extraData.visitedPlaces : [destination],
+                diaryId: mail?.extraData?.diaryId || null
+            };
+        }
+
+        function getSenderDisplayName(mail) {
+            if (mail?.extraData?.senderName) return mail.extraData.senderName;
+            if (mail?.senderType === 'ai') return 'AI分身';
+            if (mail?.senderType === 'system') return '系统';
+            return '好友';
+        }
+
+        function getReceiverDisplayName() {
+            return localStorage.getItem('current_user_name') || '我';
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (Number.isNaN(date.getTime())) return dateStr;
+            return date.toLocaleString('zh-CN', { hour12: false });
+        }
+
+        // 渲染笔记详情
+        function renderNoteDetail(data) {
+            document.getElementById('detailTitle').textContent = data.title;
+            document.getElementById('detailSender').textContent = data.sender;
+            document.getElementById('detailReceiver').textContent = data.receiver;
+            document.getElementById('detailText').textContent = data.text;
+            document.getElementById('detailLocation').textContent = data.location;
+            document.getElementById('detailTime').textContent = data.time;
+            document.getElementById('detailMood').textContent = data.mood;
+            
+            // 检查是否已有图片
+            const imageContainer = document.getElementById('imageContainer');
+            const imagePlaceholder = document.getElementById('imagePlaceholder');
+            const generateBtn = document.getElementById('generateImageBtn');
+            
+            if (data.imageUrl) {
+                // 已有图片，显示图片，隐藏占位符和按钮
+                document.getElementById('detailImage').src = data.imageUrl;
+                imageContainer.style.display = 'block';
+                imagePlaceholder.style.display = 'none';
+                generateBtn.style.display = 'none';
+            } else {
+                // 无图片，显示占位符和按钮
+                imageContainer.style.display = 'none';
+                imagePlaceholder.style.display = 'flex';
+                generateBtn.style.display = 'flex';
+            }
+        }
+
+        // 生成旅行图片
+        async function generateTravelImage() {
+            if (!currentNoteData?.diaryId) {
+                alert('当前信件暂不支持生成图片');
+                return;
+            }
+
+            const btn = document.getElementById('generateImageBtn');
+            const placeholder = document.getElementById('imagePlaceholder');
+            
+            // 更新按钮状态
+            btn.disabled = true;
+            btn.classList.add('generating');
+            btn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite;"></i> <span>正在生成图片...</span>';
+            placeholder.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite; font-size: 48px;"></i><span>AI 正在为您绘制旅行图片...</span>';
+            
+            // 添加旋转动画
+            if (!document.getElementById('spinAnimation')) {
+                const style = document.createElement('style');
+                style.id = 'spinAnimation';
+                style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+            
+            try {
+                // 调用后端 API 生成图片
+                const response = await fetch(`${API_BASE}/diaries/${currentNoteData.diaryId}/generate-image`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: currentNoteData.text,
+                        destination: currentNoteData.destination || currentNoteData.location,
+                        visitedPlaces: currentNoteData.visitedPlaces || [currentNoteData.location]
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('图片生成失败');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data.imageUrl) {
+                    // 更新数据
+                    currentNoteData.imageUrl = result.data.imageUrl;
+                    
+                    // 显示图片
+                    const imageContainer = document.getElementById('imageContainer');
+                    document.getElementById('detailImage').src = result.data.imageUrl;
+                    imageContainer.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    btn.style.display = 'none';
+                    
+                    console.log('✅ 图片生成成功');
+                } else {
+                    throw new Error(result.error || '图片生成失败');
+                }
+            } catch (error) {
+                console.error('❌ 生成图片失败:', error);
+                
+                // 恢复按钮状态
+                btn.disabled = false;
+                btn.classList.remove('generating');
+                btn.innerHTML = '<i class="ri-magic-line"></i> <span>重新生成图片</span>';
+                placeholder.innerHTML = '<i class="ri-image-add-line"></i><span>生成失败，请重试</span>';
+                
+                alert('图片生成失败: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

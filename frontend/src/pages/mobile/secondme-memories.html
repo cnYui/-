@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SecondMe 记忆 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --accent-purple: #9C27B0;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            padding-bottom: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .page-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 20px;
+        }
+
+        .page-header {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-yellow);
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+        }
+
+        .back-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 900;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .connect-btn {
+            padding: 10px 20px;
+            background: var(--accent-purple);
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+        }
+
+        .connect-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        .sync-btn {
+            padding: 10px 20px;
+            background: var(--accent-green);
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        .memories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .memory-card {
+            background: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .memory-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+        }
+
+        .memory-card-header {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .memory-icon {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .memory-icon.category-personal {
+            background: linear-gradient(135deg, #E1BEE7, #CE93D8);
+        }
+
+        .memory-icon.category-work {
+            background: linear-gradient(135deg, #BBDEFB, #90CAF9);
+        }
+
+        .memory-icon.category-hobby {
+            background: linear-gradient(135deg, #C8E6C9, #A5D6A7);
+        }
+
+        .memory-icon.category-travel {
+            background: linear-gradient(135deg, #FFE082, #FFD54F);
+        }
+
+        .memory-icon.category-food {
+            background: linear-gradient(135deg, #FFCCBC, #FFAB91);
+        }
+
+        .memory-content {
+            flex: 1;
+        }
+
+        .memory-category {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .memory-title {
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .memory-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .memory-date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 4px 4px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="header-left">
+                <div class="back-btn" onclick="window.location.href='/pages/mobile/profile.html'">
+                    <i class="ri-arrow-left-line"></i>
+                </div>
+                <div class="page-title">SecondMe 记忆</div>
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="handleConnect()" style="display: none;">
+                <i class="ri-link"></i> 连接
+            </button>
+            <button class="sync-btn" id="syncBtn" onclick="syncMemories()" style="display: none;">
+                <i class="ri-refresh-line"></i> 同步
+            </button>
+        </div>
+
+        <div class="memories-grid" id="memoriesGrid">
+            <div class="empty-state">
+                <div class="empty-icon">🔄</div>
+                <div class="empty-title">加载中...</div>
+                <div class="empty-desc">正在检查 SecondMe 连接状态</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth-check.js"></script>
+    <script src="/js/services.js"></script>
+    <script>
+        let isConnected = false;
+        let userInfo = null;
+
+        // 分类图标和颜色映射
+        const CATEGORY_CONFIG = {
+            '个人信息': { icon: '🧠', class: 'category-personal' },
+            '学业经历': { icon: '📚', class: 'category-personal' },
+            '工作经验': { icon: '💼', class: 'category-work' },
+            '技术能力': { icon: '💻', class: 'category-work' },
+            '参赛经历': { icon: '🏆', class: 'category-hobby' },
+            '兴趣爱好': { icon: '🎯', class: 'category-hobby' },
+            '性格特点': { icon: '✨', class: 'category-personal' },
+            '职业目标': { icon: '🎯', class: 'category-work' },
+            '旅行偏好': { icon: '✈️', class: 'category-travel' },
+            '美食喜好': { icon: '🍜', class: 'category-food' },
+            '个人记忆': { icon: '🧠', class: 'category-personal' }
+        };
+
+        function getCategoryConfig(category) {
+            return CATEGORY_CONFIG[category] || { icon: '🧠', class: 'category-personal' };
+        }
+
+        // 检查连接状态
+        async function checkConnectionStatus() {
+            isConnected = SecondMeService.isLoggedIn();
+            userInfo = SecondMeService.getCachedUserInfo();
+
+            const connectBtn = document.getElementById('connectBtn');
+            const syncBtn = document.getElementById('syncBtn');
+
+            if (isConnected && userInfo) {
+                connectBtn.style.display = 'none';
+                syncBtn.style.display = 'flex';
+                await loadMemories();
+            } else {
+                connectBtn.style.display = 'flex';
+                syncBtn.style.display = 'none';
+                showEmptyState('未连接', '请先连接 SecondMe 以查看你的软记忆');
+            }
+        }
+
+        // 处理连接
+        function handleConnect() {
+            // 检查是否在移动设备模式
+            if (window.innerWidth < 768) {
+                alert('⚠️ SecondMe 授权需要在桌面模式下进行\n\n请关闭 Chrome DevTools 的设备模拟模式，或使用桌面浏览器访问。');
+                return;
+            }
+            SecondMeService.initiateLogin();
+        }
+
+        // 同步记忆
+        async function syncMemories() {
+            const syncBtn = document.getElementById('syncBtn');
+            const originalHTML = syncBtn.innerHTML;
+            syncBtn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> 同步中...';
+            syncBtn.disabled = true;
+
+            try {
+                await loadMemories();
+                alert('✅ 同步成功');
+            } catch (error) {
+                console.error('同步失败:', error);
+                alert('❌ 同步失败: ' + error.message);
+            } finally {
+                syncBtn.innerHTML = originalHTML;
+                syncBtn.disabled = false;
+            }
+        }
+
+        // 加载记忆
+        async function loadMemories() {
+            const grid = document.getElementById('memoriesGrid');
+            grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔄</div><div class="empty-title">加载中...</div></div>';
+
+            try {
+                const memories = await SecondMeService.getSoftMemories();
+                
+                if (!memories || memories.length === 0) {
+                    showEmptyState('暂无记忆', '你的 SecondMe 软记忆为空');
+                    return;
+                }
+
+                renderMemories(memories);
+            } catch (error) {
+                console.error('加载记忆失败:', error);
+                showEmptyState('加载失败', '无法加载 SecondMe 记忆，请重试');
+            }
+        }
+
+        // 渲染记忆列表
+        function renderMemories(memories) {
+            const grid = document.getElementById('memoriesGrid');
+            let html = '';
+
+            memories.forEach(memory => {
+                // SecondMe API 返回的字段：factObject (分类), factContent (内容)
+                const category = memory.factObject || '个人记忆';
+                const content = memory.factContent || '';
+                const config = getCategoryConfig(category);
+                const dateStr = memory.createTime ? new Date(memory.createTime).toLocaleDateString('zh-CN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }) : '';
+                
+                // 生成标题：取内容的前20个字符
+                const title = content.length > 20 ? content.substring(0, 20) + '...' : content;
+                
+                html += `
+                    <div class="memory-card">
+                        <div class="memory-card-header">
+                            <div class="memory-icon ${config.class}">${config.icon}</div>
+                            <div class="memory-content">
+                                <div class="memory-category">${escapeHtml(category)}</div>
+                                <div class="memory-title">${escapeHtml(title)}</div>
+                                <div class="memory-text">${escapeHtml(content)}</div>
+                                ${dateStr ? `<div class="memory-date">${dateStr}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // 显示空状态
+        function showEmptyState(title, desc) {
+            const grid = document.getElementById('memoriesGrid');
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🔗</div>
+                    <div class="empty-title">${title}</div>
+                    <div class="empty-desc">${desc}</div>
+                </div>
+            `;
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // 处理 OAuth 回调
+        async function handleOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+
+            if (code && state) {
+                const savedState = sessionStorage.getItem(SecondMeService.getScopedKey('secondme_oauth_state'));
+                if (state !== savedState) {
+                    alert('❌ 授权失败：状态验证失败');
+                    window.location.href = '/pages/mobile/secondme-memories.html';
+                    return;
+                }
+
+                try {
+                    // 交换 token
+                    await SecondMeService.handleCallback(code);
+                    
+                    // 获取用户信息
+                    await SecondMeService.getUserInfo();
+                    
+                    // 清除 URL 参数并刷新页面
+                    window.location.href = '/pages/mobile/secondme-memories.html';
+                } catch (error) {
+                    console.error('OAuth 回调处理失败:', error);
+                    alert('❌ 授权失败: ' + error.message);
+                    window.location.href = '/pages/mobile/secondme-memories.html';
+                }
+            }
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .animate-spin { animation: spin 1s linear infinite; }';
+        document.head.appendChild(style);
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            await handleOAuthCallback();
+            await checkConnectionStatus();
+        });
+    </script>
+</body>
+</html>

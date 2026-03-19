@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>编辑资料 - Welcome to my house</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../styles/common.css">
+    
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+            --border-width: 4px;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .edit-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 70px;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #fff;
+            border-bottom: var(--border-width) solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+
+        .top-bar-title {
+            font-size: 18px;
+            font-weight: 900;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .edit-card {
+            background-color: #fff;
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--border-color);
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-yellow);
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+        }
+
+        .avatar-upload-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,1);
+        }
+
+        .avatar-upload-btn i {
+            font-size: 20px;
+        }
+
+        #avatarInput {
+            display: none;
+        }
+
+        .avatar-hint {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 3px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #fff;
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: inset 2px 2px 0 rgba(43, 89, 255, 0.2);
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--accent-green);
+            border: 4px solid var(--border-color);
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            margin-top: 10px;
+        }
+
+        .save-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+        }
+
+        .save-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <button class="back-btn" onclick="goBack()">
+            <i class="ri-arrow-left-line"></i>
+        </button>
+        <div class="top-bar-title">编辑资料</div>
+        <div style="width:40px;"></div>
+    </div>
+
+    <div class="edit-container">
+        <div class="edit-card">
+            <!-- 头像部分 -->
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    <img id="avatarPreview" class="avatar-preview" src="" alt="头像">
+                    <label for="avatarInput" class="avatar-upload-btn">
+                        <i class="ri-camera-line"></i>
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarChange(event)">
+                </div>
+                <div class="avatar-hint">点击相机图标更换头像</div>
+            </div>
+
+            <!-- 昵称 -->
+            <div class="form-group">
+                <label class="form-label">昵称</label>
+                <input type="text" id="nicknameInput" class="form-input" placeholder="请输入昵称" maxlength="20">
+                <div class="char-count">
+                    <span id="nicknameCount">0</span>/20
+                </div>
+            </div>
+
+            <!-- 简介 -->
+            <div class="form-group">
+                <label class="form-label">简介</label>
+                <textarea id="bioInput" class="form-input" placeholder="介绍一下自己吧..." maxlength="100"></textarea>
+                <div class="char-count">
+                    <span id="bioCount">0</span>/100
+                </div>
+            </div>
+
+            <!-- 保存按钮 -->
+            <button class="save-btn" onclick="saveProfile()">
+                <i class="ri-save-line"></i> 保存修改
+            </button>
+        </div>
+    </div>
+
+    <script src="../../js/auth-check.js"></script>
+    <script>
+        let uploadedAvatarUrl = null;
+        let currentUser = null;
+
+        function getCurrentUserId() {
+            return (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id') || '';
+        }
+
+        function getDisplayAvatar(url) {
+            if (!url) return 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+            return url.startsWith('/') ? `${window.location.origin}${url}` : url;
+        }
+
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            const response = await fetch(`/api${endpoint}`, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: body ? JSON.stringify(body) : undefined
+            });
+
+            let payload = null;
+            try {
+                payload = await response.json();
+            } catch {
+                payload = null;
+            }
+
+            if (!response.ok) {
+                throw new Error(payload?.error || `HTTP ${response.status}`);
+            }
+
+            return payload || { success: false, error: '服务返回为空' };
+        }
+
+        function showToast(message, type = 'info') {
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            alert(`${prefix} ${message}`);
+        }
+
+        function showLoading(message) {
+            console.log(message || '加载中...');
+        }
+
+        function hideLoading() {
+            console.log('加载完成');
+        }
+
+        // 页面加载时获取用户信息
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadUserInfo();
+        });
+
+        // 加载用户信息
+        async function loadUserInfo() {
+            try {
+                const userId = getCurrentUserId();
+                if (!userId) {
+                    showToast('请先登录', 'error');
+                    setTimeout(() => window.location.href = '/pages/mobile/login.html', 1000);
+                    return;
+                }
+
+                showLoading('加载中...');
+                const response = await apiRequest(`/users/${userId}`, 'GET');
+                hideLoading();
+
+                if (response.success) {
+                    currentUser = response.data;
+                    
+                    // 填充表单
+                    document.getElementById('avatarPreview').src = getDisplayAvatar(currentUser.avatar);
+                    document.getElementById('nicknameInput').value = currentUser.nickname || '';
+                    document.getElementById('bioInput').value = currentUser.bio || '';
+                    
+                    // 更新字数统计
+                    updateCharCount('nickname');
+                    updateCharCount('bio');
+                } else {
+                    showToast('加载失败: ' + response.error, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('加载用户信息失败:', error);
+                showToast('加载失败，请重试', 'error');
+            }
+        }
+
+        // 处理头像选择
+        async function handleAvatarChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                showToast('请选择图片文件', 'error');
+                return;
+            }
+
+            // 检查文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('图片大小不能超过5MB', 'error');
+                return;
+            }
+
+            try {
+                showLoading('上传中...');
+
+                // 上传图片
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const response = await fetch('/api/upload/image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (result.success) {
+                    uploadedAvatarUrl = result.data.url;
+                    // 预览头像
+                    document.getElementById('avatarPreview').src = getDisplayAvatar(uploadedAvatarUrl);
+                    showToast('头像上传成功', 'success');
+                } else {
+                    showToast('上传失败: ' + result.error, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('上传头像失败:', error);
+                showToast('上传失败，请重试', 'error');
+            }
+        }
+
+        // 更新字数统计
+        function updateCharCount(type) {
+            if (type === 'nickname') {
+                const input = document.getElementById('nicknameInput');
+                const count = document.getElementById('nicknameCount');
+                count.textContent = input.value.length;
+            } else if (type === 'bio') {
+                const input = document.getElementById('bioInput');
+                const count = document.getElementById('bioCount');
+                count.textContent = input.value.length;
+            }
+        }
+
+        // 监听输入变化
+        document.getElementById('nicknameInput').addEventListener('input', () => updateCharCount('nickname'));
+        document.getElementById('bioInput').addEventListener('input', () => updateCharCount('bio'));
+
+        // 检查昵称是否可用
+        async function checkNicknameAvailability(nickname) {
+            const query = new URLSearchParams({ nickname });
+
+            const response = await apiRequest(`/users/nickname-availability/check?${query.toString()}`, 'GET');
+            return Boolean(response?.success && response?.data?.available);
+        }
+
+        // 保存资料
+        async function saveProfile() {
+            try {
+                const userId = getCurrentUserId();
+                if (!userId) {
+                    showToast('请先登录', 'error');
+                    return;
+                }
+
+                const nickname = document.getElementById('nicknameInput').value.trim();
+                const bio = document.getElementById('bioInput').value.trim();
+
+                // 验证昵称
+                if (!nickname) {
+                    showToast('昵称不能为空', 'error');
+                    return;
+                }
+
+                const isAvailable = await checkNicknameAvailability(nickname);
+                if (!isAvailable) {
+                    showToast('昵称已存在，请更换其他昵称', 'error');
+                    return;
+                }
+
+                showLoading('保存中...');
+
+                // 准备更新数据
+                const updateData = {
+                    nickname: nickname,
+                    bio: bio
+                };
+
+                // 如果上传了新头像，添加到更新数据中
+                if (uploadedAvatarUrl) {
+                    updateData.avatar = uploadedAvatarUrl;
+                }
+
+                const response = await apiRequest(`/users/${userId}`, 'PUT', updateData);
+                hideLoading();
+
+                if (response.success) {
+                    // 更新本地存储
+                    const userInfo = {
+                        ...(JSON.parse(localStorage.getItem('user_info') || '{}')),
+                        ...response.data
+                    };
+                    localStorage.setItem('current_user', JSON.stringify(userInfo));
+                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+
+                    showToast('保存成功', 'success');
+                    
+                    // 延迟返回
+                    setTimeout(() => {
+                        window.location.href = '/pages/mobile/profile.html';
+                    }, 1000);
+                } else {
+                    showToast('保存失败: ' + response.error, 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('保存资料失败:', error);
+                showToast(error.message || '保存失败，请重试', 'error');
+            }
+        }
+
+        // 返回
+        function goBack() {
+            window.location.href = '/pages/mobile/profile.html';
+        }
+    </script>
+</body>
+</html>

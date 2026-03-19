@@ -1,0 +1,160 @@
+{
+  "noteId": "65d97f68000000000b00db5f",
+  "title": "怎么去形容春天呢，一场新西兰限定的梦",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "Clutha River Seat Wanaka",
+      "city": "Wanaka",
+      "suggestions": [
+        "在河边晒太阳，享受自然美景",
+        "与当地居民和宠物互动"
+      ],
+      "evidence": [
+        "P1 📍 Clutha River Seat Wanaka 这条河走了不久，就看到两位新西兰女孩在河边躺着晒太阳，真的好像仙境一般。她们的宠物狗看到我就跑了过来，和她们交流了一下，然后再拍的照片。"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Deer Park Heights Queenstown",
+      "city": "Queenstown",
+      "suggestions": [
+        "提前官网购票进入鹿公园",
+        "喂年长的鹿饲料，与鹿互动"
+      ],
+      "evidence": [
+        "P2 📍 Deer Park Heights Queenstown 这个皇后镇的鹿公园，人很少，需要提前官网购票进入。里面比较年长的鹿🦌比较亲近人，你只要喂它饲料就开心的过来了。"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "48 Paua Bay Road Akaroa",
+      "city": "Akaroa",
+      "suggestions": [
+        "寻找特别的树形景观",
+        "注意农场主可能已关闭入口，需碰运气前往，不要硬闯"
+      ],
+      "evidence": [
+        "P3 📍 48 Paua Bay Road Akaroa 这棵树太特别了，我们去阿卡罗阿开车无意间看到的。据说现在去的人太多，农场主已经把门关了，想去的童学只能去碰碰运气，千万不要硬闯。"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "382-388 Decanter Bay Rd Little Akaloa",
+      "city": "Little Akaloa",
+      "suggestions": [
+        "欣赏有特色的树和羊群",
+        "靠近羊群时注意它们可能会跑开"
+      ],
+      "evidence": [
+        "P4 📍 382-388 Decanter Bay Rd Little Akaloa 这块农场也是开车看到的，树很有特色，里面的羊群，我刚靠近栏杆就跑了。"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "Sandymount Recreation Reserve",
+      "city": "Dunedin",
+      "suggestions": [
+        "观察海边农场的羊群"
+      ],
+      "evidence": [
+        "P5 📍 Sandymount Recreation Reserve 但尼丁海边的一个农场，去的时候羊🐏从围栏里面跑了出来，看起来傻傻的。"
+      ],
+      "confidence": 0.7
+    },
+    {
+      "location": "Queenstown Gardens",
+      "city": "Queenstown",
+      "suggestions": [
+        "在湖边公园放松，体验当地悠闲生活",
+        "可以坐着、躺着、聊天、骑行、遛狗",
+        "在湖边的公园散步，看当地人坐在草地上聊天、骑行、遛狗，感受悠闲和松弛的氛围"
+      ],
+      "evidence": [
+        "P6 📍 Queenstown Gardens 皇后镇的湖旁边的公园，可以看到这里的人，在草地上坐着或者躺着，聊天、骑行、遛狗、真的好悠闲好松弛。",
+        "Queenstown Gardens 皇后镇的湖旁边的公园，可以看到这里的人，在草地上坐着或者躺着，聊天、骑行、遛狗、真的好悠闲好松弛"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Mona Vale Garden Park",
+      "city": "Christchurch",
+      "suggestions": [
+        "欣赏各种花卉和特色植物"
+      ],
+      "evidence": [
+        "P7 📍 Mona Vale Garden Park 基督城的一个公园，里面有很多花和很多特色的植物，如果到了基督城，这里值得来逛一圈。"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "SPA• Hot Tubs Omarama",
+      "city": "Omarama",
+      "suggestions": [
+        "享受自然风景中的泡汤体验",
+        "体验良好的私密性"
+      ],
+      "evidence": [
+        "P8 📍 SPA• Hot Tubs Omarama 一家泡汤的地方，自然风景很好看，别看感觉在野外，它的私密性却做的很好。"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "Wanaka Lakefront",
+      "city": "Wanaka",
+      "suggestions": [
+        "在湖边散步、划船或晒太阳，感受松弛感",
+        "散步",
+        "划船",
+        "躺在草地上聊天",
+        "晒太阳"
+      ],
+      "evidence": [
+        "P9 📍 Wanaka Lakefront 瓦纳卡的湖边，人们在这里散步、划船、或者躺在草地上聊天，晒太阳，让你感受一下什么叫做松弛感。",
+        "Wanaka的湖边，人们在这里散步、划船、或者躺在草地上聊天，晒太阳，让你感受一下什么叫做松弛感"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Lakeside Drive Tekapo",
+      "city": "Tekapo",
+      "suggestions": [
+        "欣赏蒂卡普湖边的鲁冰花",
+        "趁早观赏，因为鲁冰花被视为外来入侵物种，当地政府每年都在铲除",
+        "观赏鲁冰花"
+      ],
+      "evidence": [
+        "P10 📍 Lakeside Drive tekapo 新西兰的春天最出名的花就是鲁冰花了，蒂卡普湖边上的鲁冰花个人觉得是最好看的。鲁冰花被当地政府视为外来入侵物种，每年都在铲除，所以想去新西兰看鲁冰花的要趁早了。",
+        "新西兰的春天最出名的花就是鲁冰花了，蒂卡普湖边上的鲁冰花个人觉得是最好看的。鲁冰花被当地政府视为外来入侵物种，每年都在铲除，所以想去新西兰看鲁冰花的要趁早了"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Mona Vale Garden Park",
+      "city": "基督城",
+      "suggestions": [
+        "参观公园，欣赏各种花和特色植物"
+      ],
+      "evidence": [
+        "Mona Vale Garden Park 基督城的一个公园，里面有很多花和很多特色的植物，如果到了基督城，这里值得来逛一圈"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "SPA• Hot Tubs Omarama",
+      "city": "",
+      "suggestions": [
+        "享受自然风景优美的泡汤体验，体验良好的私密性"
+      ],
+      "evidence": [
+        "SPA• Hot Tubs Omarama 一家泡汤的地方，自然风景很好看，别看感觉在野外，它的私密性却做的很好"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子描述了新西兰多个春日景点，包括河流、鹿公园、特色树木、农场、公园和湖边等，提供了每个地点的建议玩法，如晒太阳、与动物互动、欣赏风景、泡汤等，强调了新西兰春天的自然美景与悠闲生活。；帖子描述了新西兰多个地点的春日游玩体验，重点推荐了皇后镇的湖边公园、基督城的 Mona Vale Garden Park 公园，以及 Omarama 的 SPA• Hot Tubs 泡汤体验，强调了自然风光与休闲活动的结合。；图片展示了新西兰的自然风光，第一张图片可能拍摄于Wanaka Lakefront，第二张图片可能拍摄于Lakeside Drive Tekapo，鲁冰花盛开，背景是湖泊和山脉，展现了新西兰春天的美丽景色。",
+  "uncertain": [
+    "图片中未提供具体文字信息，地点和建议基于帖子内容提取"
+  ]
+}

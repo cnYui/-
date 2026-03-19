@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>登录 - 明日旅途</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --accent-green: #00E676;
+            --accent-yellow: #FFD600;
+            --accent-orange: #FF5C00;
+            --accent-blue: #2B59FF;
+            --border-color: #000;
+            --text-color: #000;
+            --primary-bg: #f0f0f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 瀑布流背景容器 */
+        .waterfall-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            overflow: hidden;
+        }
+
+        .waterfall-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: scrollUp 30s linear infinite;
+        }
+
+        .waterfall-column:nth-child(2) {
+            animation-delay: -8s;
+            animation-duration: 35s;
+        }
+
+        .waterfall-column:nth-child(3) {
+            animation-delay: -16s;
+            animation-duration: 28s;
+        }
+
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        .waterfall-item {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .waterfall-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* 遮罩层 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.75);
+            z-index: 1;
+        }
+
+        .login-container {
+            background: #fff;
+            border: 6px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 12px 12px 0 rgba(0,0,0,1);
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 360px;
+            animation: slideIn 0.5s ease-out;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--text-color);
+            margin-bottom: 6px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-form {
+            margin-top: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 4px solid var(--border-color);
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(43, 89, 255, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: 900;
+            background: var(--accent-yellow);
+            color: var(--text-color);
+            border: 4px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 6px 6px 0 rgba(0,0,0,1);
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .login-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: 3px 3px 0 rgba(0,0,0,1);
+        }
+
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .error-message {
+            margin-top: 12px;
+            padding: 12px;
+            background: #FFEBEE;
+            border: 3px solid #E53935;
+            border-radius: 8px;
+            color: #C62828;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 瀑布流背景 -->
+    <div class="waterfall-bg" id="waterfallBg"></div>
+    <!-- 遮罩层 -->
+    <div class="overlay"></div>
+    
+    <div class="login-container">
+        <div class="login-header">
+            <h1 class="login-title">明日旅途</h1>
+            <p class="login-subtitle">开启你的 AI 旅行之旅</p>
+        </div>
+
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="username">用户名</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    id="username" 
+                    placeholder="请输入用户名"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span>开始旅行</span>
+            </button>
+
+            <div class="error-message" id="errorMessage"></div>
+        </form>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('username');
+            const username = usernameInput.value.trim();
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (!username) {
+                showError('请输入用户名');
+                return;
+            }
+            
+            // 禁用按钮
+            loginBtn.disabled = true;
+            loginBtn.textContent = '登录中...';
+            
+            // 添加旋转动画
+            if (!document.getElementById('spinAnimation')) {
+                const style = document.createElement('style');
+                style.id = 'spinAnimation';
+                style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        username: username,
+                        nickname: username
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 保存用户信息到 localStorage
+                    localStorage.setItem('current_user_id', result.data.id);
+                    localStorage.setItem('current_user', JSON.stringify(result.data));
+                    localStorage.setItem('user_info', JSON.stringify(result.data));
+
+                    // 写入登录 Cookie（30天）
+                    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+                    document.cookie = `current_user_id=${encodeURIComponent(result.data.id)}; expires=${expires}; path=/`;
+                    
+                    console.log('✅ 登录成功:', result.data);
+                    
+                    // 跳转到首页
+                    window.location.href = '/';
+                } else {
+                    showError(result.error || '登录失败，请重试');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<span>开始旅行</span>';
+                }
+            } catch (error) {
+                console.error('❌ 登录失败:', error);
+                showError('网络错误，请检查后端服务是否启动');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<span>开始旅行</span>';
+            }
+        });
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 3000);
+        }
+        
+        function getCookieValue(name) {
+            const key = `${name}=`;
+            const parts = document.cookie.split(';');
+            for (const part of parts) {
+                const value = part.trim();
+                if (value.startsWith(key)) {
+                    return decodeURIComponent(value.slice(key.length));
+                }
+            }
+            return '';
+        }
+
+        // 检查是否已登录
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = getCookieValue('current_user_id');
+            if (userId) {
+                // 已登录，直接跳转
+                window.location.href = '/';
+            }
+            
+            // 初始化瀑布流背景
+            initWaterfallBackground();
+        });
+        
+        // 瀑布流背景图片
+        function initWaterfallBackground() {
+            const images = [
+                // 风景照
+                'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80', // 山脉
+                'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&q=80', // 自然风光
+                'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&q=80', // 湖泊
+                'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80', // 海滩
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80', // 热带海滩
+                'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&q=80', // 雪山
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80', // 森林
+                'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=400&q=80', // 瀑布
+                // 著名景点
+                'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400&q=80', // 长城
+                'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400&q=80', // 泰姬陵
+                'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=400&q=80', // 巴黎埃菲尔铁塔
+                'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&q=80', // 威尼斯
+                'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80', // 京都
+                'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400&q=80', // 罗马斗兽场
+                'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400&q=80', // 圣托里尼
+                'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&q=80', // 迪拜
+                // 旅行者照片
+                'https://images.unsplash.com/photo-1527631746610-bca00a040d60?w=400&q=80', // 旅行者背影
+                'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=400&q=80', // 背包客
+                'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=400&q=80', // 飞机旅行
+                'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&q=80', // 公路旅行
+                'https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400&q=80', // 探险
+                'https://images.unsplash.com/photo-1504150558240-0b4fd8946624?w=400&q=80', // 地图规划
+                'https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=400&q=80', // 徒步
+                'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=400&q=80', // 朋友旅行
+            ];
+            
+            const container = document.getElementById('waterfallBg');
+            const columnCount = 3;
+            
+            // 创建列
+            for (let i = 0; i < columnCount; i++) {
+                const column = document.createElement('div');
+                column.className = 'waterfall-column';
+                
+                // 随机打乱图片顺序
+                const shuffled = [...images].sort(() => Math.random() - 0.5);
+                
+                // 每列添加图片（重复两次以实现无缝滚动）
+                const imagesPerColumn = Math.ceil(images.length / columnCount) * 2;
+                for (let j = 0; j < imagesPerColumn; j++) {
+                    const item = document.createElement('div');
+                    item.className = 'waterfall-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = shuffled[j % shuffled.length];
+                    img.alt = '旅行照片';
+                    img.loading = 'lazy';
+                    
+                    // 随机高度
+                    const heights = [150, 180, 200, 220, 250, 280];
+                    img.style.height = heights[Math.floor(Math.random() * heights.length)] + 'px';
+                    
+                    item.appendChild(img);
+                    column.appendChild(item);
+                }
+                
+                container.appendChild(column);
+            }
+        }
+    </script>
+</body>
+</html>

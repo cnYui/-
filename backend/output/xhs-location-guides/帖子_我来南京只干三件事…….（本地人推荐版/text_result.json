@@ -1,0 +1,220 @@
+{
+  "noteId": "66cfdcdc000000001d017369",
+  "title": "我来南京只干三件事…….（本地人推荐版",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "夕➕",
+      "city": "南京",
+      "suggestions": [
+        "看场长江日落"
+      ],
+      "evidence": [
+        "去夕➕看场长江日落"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "奥体东",
+      "city": "南京",
+      "suggestions": [
+        "坐一趟电车",
+        "感受CBD夜景美丽"
+      ],
+      "evidence": [
+        "奥体东坐一趟电车感受CBD夜景美丽"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "金银街",
+      "city": "南京",
+      "suggestions": [
+        "买点金陵大肉包"
+      ],
+      "evidence": [
+        "到金银街买点金陵大肉包"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "首都旧址公园",
+      "city": "南京",
+      "suggestions": [
+        "看一场日落"
+      ],
+      "evidence": [
+        "去首都旧址公园看一场日落"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "林下",
+      "city": "南京",
+      "suggestions": [
+        "喝一杯咖啡",
+        "感受民国气息"
+      ],
+      "evidence": [
+        "到林下喝一杯咖啡感受民国气息"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "1701 minibar",
+      "city": "南京",
+      "suggestions": [
+        "喝一杯微醺一下"
+      ],
+      "evidence": [
+        "1701 minibar 喝一杯微醺一下"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "啾包",
+      "city": "南京",
+      "suggestions": [
+        "吃一顿西餐"
+      ],
+      "evidence": [
+        "去啾包吃一顿西餐"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "新街口",
+      "city": "南京",
+      "suggestions": [
+        "喝一杯开心果牛乳"
+      ],
+      "evidence": [
+        "到新街口喝一杯开心果牛乳"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "百家湖",
+      "city": "南京",
+      "suggestions": [
+        "感受下湖面的微风迎面"
+      ],
+      "evidence": [
+        "傍晚去百家湖感受下湖面的微风迎面"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "kiwami",
+      "city": "南京",
+      "suggestions": [
+        "喝一杯微醺一晚上"
+      ],
+      "evidence": [
+        "kiwami喝一杯微醺一晚上"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "一木家",
+      "city": "南京",
+      "suggestions": [
+        "一边看游船一边浅咖"
+      ],
+      "evidence": [
+        "去一木家一边看游船一边浅咖"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "颐和路peekabo",
+      "city": "南京",
+      "suggestions": [
+        "吃一顿下午茶"
+      ],
+      "evidence": [
+        "到颐和路peekabo吃一顿下午茶"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "rolling in dough",
+      "city": "南京",
+      "suggestions": [
+        "小蛋糕记得去吃"
+      ],
+      "evidence": [
+        "rolling in dough的小蛋糕记得去吃"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "上海路",
+      "city": "南京",
+      "suggestions": [
+        "打卡复古小屋",
+        "喝一杯咖啡"
+      ],
+      "evidence": [
+        "去上海路打卡复古小屋喝一杯咖啡"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "丰富路NIJO",
+      "city": "南京",
+      "suggestions": [
+        "逛逛",
+        "拍拍照片"
+      ],
+      "evidence": [
+        "去丰富路NIJO逛逛 拍拍照片"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "白兔",
+      "city": "南京",
+      "suggestions": [
+        "拍一张拍立得照片"
+      ],
+      "evidence": [
+        "在白兔拍一张拍立得照片"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "熙南里环龙相机",
+      "city": "南京",
+      "suggestions": [
+        "看看ccd",
+        "拍拍拍立得"
+      ],
+      "evidence": [
+        "去熙南里环龙相机看看ccd拍拍拍立得"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "是日",
+      "city": "南京",
+      "suggestions": [
+        "吃一份河畔舒芙蕾"
+      ],
+      "evidence": [
+        "去是日吃一份河畔舒芙蕾"
+      ],
+      "confidence": 0.8
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "本地人推荐的南京游玩指南，包含18个具体地点及玩法，涵盖观日落、体验电车、品尝美食（如金陵大肉包）、咖啡酒吧、拍照打卡等，覆盖奥体、新街口、百家湖等多个区域，适合citywalk和深度体验。",
+  "uncertain": [
+    "夕➕",
+    "首都旧址公园",
+    "啾包",
+    "一木家",
+    "白兔",
+    "是日"
+  ]
+}

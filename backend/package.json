@@ -1,0 +1,29 @@
+{
+  "name": "mingri-lvtu-backend",
+  "version": "1.0.0",
+  "description": "明日旅途后端",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:migrate:pg": "node src/database/migrate-postgres.js",
+    "db:import:xhs": "node src/database/import-xhs-posts.js",
+    "db:extract:xhs:intel": "node src/database/extract-xhs-travel-intel.js",
+    "db:extract:xhs:guides": "node src/database/extract-xhs-location-guides.js",
+    "db:build:xhs:dataset": "node src/database/build-xhs-guides-dataset.js",
+    "db:import:xhs:dataset": "node src/database/import-xhs-guides-dataset.js",
+    "db:refine:xhs:locations": "node src/database/refine-xhs-dataset-locations-stepfun.js",
+    "db:refine:xhs:db:locations": "node src/database/refine-xhs-posts-locations-stepfun.js",
+    "db:geocode:xhs:amap": "node src/database/geocode-xhs-posts-amap.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.6",
+    "better-sqlite3": "^12.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "multer": "^2.1.1",
+    "pg": "^8.16.3"
+  }
+}

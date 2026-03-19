@@ -681,7 +681,7 @@
             const content = input?.value?.trim();
             
             if (!content) {
-                alert('请填写记忆内容');
+                window.AppUI?.showToast('请填写记忆内容', 'error');
                 return;
             }
 
@@ -741,11 +741,11 @@
                 const message = updatedCount > 0 
                     ? `已追加 ${updatedCount} 个分类，新增 ${addedCount} 个分类` 
                     : `已新增 ${addedCount} 个分类`;
-                alert(message);
+                window.AppUI?.showToast(message, 'success');
                 
             } catch (error) {
                 console.error('❌ AI 分类失败:', error);
-                alert('AI 分类失败: ' + error.message);
+                window.AppUI?.showToast('AI 分类失败: ' + error.message, 'error');
             } finally {
                 if (btn) {
                     btn.innerHTML = '<i class="ri-save-line"></i> 保存并分类';
@@ -764,7 +764,7 @@
                 console.log('✅ 记忆已删除');
             } catch (error) {
                 console.error('删除记忆失败:', error);
-                alert('删除失败，请重试');
+                window.AppUI?.showToast('删除失败，请重试', 'error');
             }
         }
 

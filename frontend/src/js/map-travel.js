@@ -423,7 +423,7 @@ function initTodoItemListeners() {
                 this.style.opacity = '1';
                 const icon = this.querySelector('.todo-status-icon');
                 icon.classList.add('done');
-                icon.innerHTML = '<i class="ri-checkbox-circle-fill"></i>';
+                icon.innerHTML = '<i class="ri-check-line"></i>';
                 
                 // 检查是否所有景点都完成了
                 checkAllCompleted();

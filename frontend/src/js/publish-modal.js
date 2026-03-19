@@ -1,5 +1,8 @@
 // 发布悬浮窗控制
-const POST_API_BASE = '/api';
+import { apiFormRequest, apiJsonRequest } from './utils/api.js';
+import { getAuthUserId } from './utils/auth.js';
+import { showToast } from './utils/helpers.js';
+
 let currentLocation = null; // 当前位置信息
 const AMAP_WEB_KEY = 'eff8ab024dd806b392d1216eb0f7abdb';
 const AMAP_SECURITY_CODE = 'a096728c5e8eadaf7b4c2d88b2ea9f26';
@@ -344,7 +347,7 @@ function bindLocationSearch() {
 
 // 获取当前用户ID
 function getPostUserId() {
-    return (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id');
+    return getAuthUserId();
 }
 
 // 获取当前位置
@@ -508,23 +511,6 @@ async function resolvePublishLocation(locationInputValue) {
     });
 }
 
-async function parseApiJson(response, defaultErrorMessage) {
-    const text = await response.text();
-    let data = null;
-
-    try {
-        data = text ? JSON.parse(text) : null;
-    } catch (error) {
-        throw new Error(`${defaultErrorMessage}（服务返回非 JSON，HTTP ${response.status}）`);
-    }
-
-    if (!response.ok) {
-        throw new Error(data?.error || `${defaultErrorMessage}（HTTP ${response.status}）`);
-    }
-
-    return data;
-}
-
 async function uploadImageFile(file) {
     if (!file) return null;
 
@@ -533,12 +519,10 @@ async function uploadImageFile(file) {
     const formData = new FormData();
     formData.append('image', uploadFile);
 
-    const response = await fetch(`${POST_API_BASE}/upload/image`, {
+    const result = await apiFormRequest('/upload/image', {
         method: 'POST',
-        body: formData
+        formData
     });
-
-    const result = await parseApiJson(response, '图片上传失败');
     if (!result?.success || !result?.data?.url) {
         throw new Error(result?.error || '图片上传失败');
     }
@@ -562,7 +546,7 @@ function handleGallerySelect(event) {
             reader.readAsDataURL(compressedFile);
         })
         .catch((error) => {
-            alert(error.message || '图片处理失败，请重试');
+            showToast(error.message || '图片处理失败，请重试', 'error');
         });
 }
 
@@ -582,7 +566,7 @@ function handleCameraCapture(event) {
             reader.readAsDataURL(compressedFile);
         })
         .catch((error) => {
-            alert(error.message || '图片处理失败，请重试');
+            showToast(error.message || '图片处理失败，请重试', 'error');
         });
 }
 
@@ -724,7 +708,7 @@ function handleEditorImageSelect(event) {
             renderEditorImages();
         })
         .catch((error) => {
-            alert(error.message || '图片处理失败，请重试');
+            showToast(error.message || '图片处理失败，请重试', 'error');
         });
 }
 
@@ -760,38 +744,38 @@ async function publishImageNote() {
     const locationInputValue = document.getElementById('imageEditorLocation')?.value?.trim() || '';
 
     if (!title.trim()) {
-        alert('请填写帖子标题');
+        showToast('请填写帖子标题', 'error');
         return;
     }
 
     if (!content.trim()) {
-        alert('请填写帖子内容');
+        showToast('请填写帖子内容', 'error');
         return;
     }
 
     if (!visitTime) {
-        alert('请选择发布时间');
+        showToast('请选择发布时间', 'error');
         return;
     }
 
     if (!mood) {
-        alert('请选择发布表情');
+        showToast('请选择发布表情', 'error');
         return;
     }
 
     if (!locationInputValue) {
-        alert('请填写发布地点');
+        showToast('请填写发布地点', 'error');
         return;
     }
 
     if (activePublishMode === 'image' && selectedImageFiles.length === 0) {
-        alert('请先选择至少一张图片');
+        showToast('请先选择至少一张图片', 'error');
         return;
     }
     
     const userId = getPostUserId();
     if (!userId) {
-        alert('请先登录');
+        showToast('请先登录', 'error');
         window.location.href = '/pages/mobile/login.html';
         return;
     }
@@ -805,10 +789,9 @@ async function publishImageNote() {
         }
 
         // 1. 发布贴文
-        const postResponse = await fetch(`${POST_API_BASE}/posts`, {
+        const postResult = await apiJsonRequest('/posts', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
                 content: `${title}\n\n${content}`,
                 imageUrl,
                 mood,
@@ -818,10 +801,8 @@ async function publishImageNote() {
                 lat: targetLocation.lat,
                 lng: targetLocation.lng,
                 visitTime
-            })
+            }
         });
-
-        const postResult = await parseApiJson(postResponse, '发布失败');
         
         if (!postResult.success) {
             throw new Error(postResult.error || '发布失败');
@@ -831,28 +812,25 @@ async function publishImageNote() {
         renderPostMarkerOnMap(postResult.data);
         
         // 2. 创建聊天室
-        const chatroomResponse = await fetch(`${POST_API_BASE}/chatrooms/create-by-location`, {
+        const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
                 postId: postResult.data.id,
                 city: targetLocation.city,
                 district: targetLocation.district,
                 lat: targetLocation.lat,
                 lng: targetLocation.lng,
                 radius: 1000
-            })
+            }
         });
-
-        const chatroomResult = await parseApiJson(chatroomResponse, '创建聊天室失败');
         
         if (chatroomResult.success) {
             console.log('✅ 聊天室创建成功:', chatroomResult.data);
             const matchCount = chatroomResult.data.matchedUsers?.length || 0;
             if (matchCount > 0) {
-                alert(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`);
+                showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`, 'success');
             } else {
-                alert('发布成功！你是第一个在这里发帖的人~');
+                showToast('发布成功！你是第一个在这里发帖的人~', 'success');
             }
         }
         
@@ -862,7 +840,7 @@ async function publishImageNote() {
         
     } catch (error) {
         console.error('❌ 发布失败:', error);
-        alert('发布失败: ' + error.message);
+        showToast('发布失败: ' + error.message, 'error');
     }
 }
 
@@ -1003,13 +981,13 @@ function closeTextEditor() {
 async function submitTextNote() {
     const text = document.getElementById('textEditorInput').value.trim();
     if (!text) {
-        alert('请输入内容');
+        showToast('请输入内容', 'error');
         return;
     }
     
     const userId = getPostUserId();
     if (!userId) {
-        alert('请先登录');
+        showToast('请先登录', 'error');
         window.location.href = '/pages/mobile/login.html';
         return;
     }
@@ -1021,20 +999,17 @@ async function submitTextNote() {
     
     try {
         // 1. 发布贴文
-        const postResponse = await fetch(`${POST_API_BASE}/posts`, {
+        const postResult = await apiJsonRequest('/posts', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
                 content: text,
                 city: currentLocation.city,
                 district: currentLocation.district,
                 locationName: currentLocation.locationName,
                 lat: currentLocation.lat,
                 lng: currentLocation.lng
-            })
+            }
         });
-
-        const postResult = await parseApiJson(postResponse, '发布失败');
         
         if (!postResult.success) {
             throw new Error(postResult.error || '发布失败');
@@ -1043,28 +1018,25 @@ async function submitTextNote() {
         console.log('✅ 贴文发布成功:', postResult.data);
         
         // 2. 创建聊天室
-        const chatroomResponse = await fetch(`${POST_API_BASE}/chatrooms/create-by-location`, {
+        const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+            body: {
                 postId: postResult.data.id,
                 city: currentLocation.city,
                 district: currentLocation.district,
                 lat: currentLocation.lat,
                 lng: currentLocation.lng,
                 radius: 1000
-            })
+            }
         });
-
-        const chatroomResult = await parseApiJson(chatroomResponse, '创建聊天室失败');
         
         if (chatroomResult.success) {
             console.log('✅ 聊天室创建成功:', chatroomResult.data);
             const matchCount = chatroomResult.data.matchedUsers?.length || 0;
             if (matchCount > 0) {
-                alert(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`);
+                showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`, 'success');
             } else {
-                alert('发布成功！你是第一个在这里发帖的人~');
+                showToast('发布成功！你是第一个在这里发帖的人~', 'success');
             }
         }
         
@@ -1074,7 +1046,7 @@ async function submitTextNote() {
         
     } catch (error) {
         console.error('❌ 发布失败:', error);
-        alert('发布失败: ' + error.message);
+        showToast('发布失败: ' + error.message, 'error');
     }
 }
 

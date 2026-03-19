@@ -296,10 +296,8 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // 保存用户信息到 localStorage
+                    localStorage.setItem('auth_user', JSON.stringify(result.data));
                     localStorage.setItem('current_user_id', result.data.id);
-                    localStorage.setItem('current_user', JSON.stringify(result.data));
-                    localStorage.setItem('user_info', JSON.stringify(result.data));
 
                     // 写入登录 Cookie（30天）
                     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();

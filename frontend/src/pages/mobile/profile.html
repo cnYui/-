@@ -553,7 +553,7 @@
     <script type="module" src="/js/publish-modal.js"></script>
     <script>
         async function loadProfileData() {
-            const userId = (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id');
+            const userId = (window.AuthSession && window.AuthSession.getUserId()) || '';
             if (!userId) {
                 window.location.href = '/pages/mobile/login.html';
                 return;
@@ -568,8 +568,9 @@
                 }
 
                 const user = result.data;
-                localStorage.setItem('current_user', JSON.stringify(user));
-                localStorage.setItem('user_info', JSON.stringify(user));
+                if (window.UserCache && window.UserCache.saveCachedUser) {
+                    window.UserCache.saveCachedUser(user);
+                }
 
                 const avatar = user.avatar ? (user.avatar.startsWith('/') ? `${window.location.origin}${user.avatar}` : user.avatar) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
                 document.getElementById('profileAvatar').src = avatar;
@@ -593,7 +594,7 @@
         function connectSecondMe() {
             // 检查是否在移动设备模式
             if (window.innerWidth < 768) {
-                alert('⚠️ SecondMe 授权需要在桌面模式下进行\n\n请关闭 Chrome DevTools 的设备模拟模式，或使用桌面浏览器访问。');
+                window.AppUI?.showToast('SecondMe 授权需要在桌面模式下进行', 'error');
                 return;
             }
             SecondMeService.initiateLogin();
@@ -631,11 +632,6 @@
                 `;
                 menuItem.onclick = connectSecondMe;
             }
-        }
-
-        // SecondMe 连接功能
-        function connectSecondMe() {
-            SecondMeService.initiateLogin();
         }
 
         // 打开 SecondMe 管理弹窗
@@ -703,14 +699,14 @@
                 
                 if (result && result.list && result.list.length > 0) {
                     Storage.saveSecondMeMemories(result.list);
-                    alert(`成功同步 ${result.list.length} 条记忆`);
+                    window.AppUI?.showToast(`成功同步 ${result.list.length} 条记忆`, 'success');
                     console.log('✅ SecondMe记忆同步成功:', result.list.length, '条');
                 } else {
-                    alert('没有找到 SecondMe 记忆数据');
+                    window.AppUI?.showToast('没有找到 SecondMe 记忆数据', 'info');
                 }
             } catch (error) {
                 console.error('❌ 同步SecondMe记忆失败:', error);
-                alert('同步失败：' + (error.message || '请重试'));
+                window.AppUI?.showToast('同步失败：' + (error.message || '请重试'), 'error');
             } finally {
                 if (btn) {
                     btn.innerHTML = '<i class="ri-refresh-line"></i> 同步记忆';

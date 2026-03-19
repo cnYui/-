@@ -3,6 +3,10 @@
 // 包含：SecondMe OAuth、DeepSeek AI、记忆管理、存储
 // ============================================================
 
+import { getAuthUserId } from './utils/auth.js';
+import { showToast } from './utils/helpers.js';
+import { saveCachedUser } from './utils/user-cache.js';
+
 // ------ API 配置 ------
 const API_BASE = '/api';
 // 使用 Web 版本授权页面，避免移动应用协议问题
@@ -12,11 +16,7 @@ const SECONDME_CLIENT_ID = '1fd10355-ad04-43b1-a479-5a868b505130';
 // ------ SecondMe Service ------
 const SecondMeService = {
     getCurrentUserId() {
-        if (window.AuthSession && typeof window.AuthSession.getUserId === 'function') {
-            const id = window.AuthSession.getUserId();
-            if (id) return String(id);
-        }
-        return localStorage.getItem('current_user_id') || '';
+        return getAuthUserId();
     },
 
     getScopedKey(baseKey) {
@@ -292,7 +292,7 @@ const Storage = {
         return SecondMeService.getCurrentUserId(); 
     },
     setUserId(id) {
-        localStorage.setItem('current_user_id', id);
+        saveCachedUser({ id });
     }
 };
 
@@ -326,7 +326,7 @@ function checkOAuthCallback() {
                 })
                 .catch(error => {
                     console.error('❌ SecondMe 登录失败:', error);
-                    alert('SecondMe 登录失败: ' + error.message);
+                    showToast('SecondMe 登录失败: ' + error.message, 'error');
                 });
         }
     }

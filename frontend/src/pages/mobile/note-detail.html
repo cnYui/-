@@ -337,6 +337,8 @@
         </div>
     </div>
 
+    <script type="module" src="/js/utils/helpers.js"></script>
+    <script type="module" src="/js/utils/user-cache.js"></script>
     <script>
         const API_BASE = '/api';
         let currentNoteData = null;
@@ -347,7 +349,7 @@
             currentNoteId = urlParams.get('id');
 
             if (!currentNoteId) {
-                alert('缺少信件ID');
+                window.AppUI?.showToast('缺少信件ID', 'error');
                 history.back();
                 return;
             }
@@ -364,7 +366,7 @@
                 renderNoteDetail(currentNoteData);
             } catch (error) {
                 console.error('❌ 加载信件详情失败:', error);
-                alert('加载信件详情失败: ' + error.message);
+                window.AppUI?.showToast('加载信件详情失败: ' + error.message, 'error');
                 history.back();
             }
         });
@@ -396,7 +398,7 @@
         }
 
         function getReceiverDisplayName() {
-            return localStorage.getItem('current_user_name') || '我';
+            return window.UserCache?.getCachedUserName?.() || '我';
         }
 
         function formatDateTime(dateStr) {
@@ -438,7 +440,7 @@
         // 生成旅行图片
         async function generateTravelImage() {
             if (!currentNoteData?.diaryId) {
-                alert('当前信件暂不支持生成图片');
+                window.AppUI?.showToast('当前信件暂不支持生成图片', 'error');
                 return;
             }
 
@@ -503,7 +505,7 @@
                 btn.innerHTML = '<i class="ri-magic-line"></i> <span>重新生成图片</span>';
                 placeholder.innerHTML = '<i class="ri-image-add-line"></i><span>生成失败，请重试</span>';
                 
-                alert('图片生成失败: ' + error.message);
+                window.AppUI?.showToast('图片生成失败: ' + error.message, 'error');
             }
         }
     </script>

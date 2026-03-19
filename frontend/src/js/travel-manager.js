@@ -1,6 +1,8 @@
 // 旅行管理功能
+import { apiJsonRequest, apiRequest } from './utils/api.js';
+import { getAuthUserId } from './utils/auth.js';
+import { showToast } from './utils/helpers.js';
 
-const API_BASE = '/api';
 let currentUserId = null;
 let travelProgressInterval = null;
 let currentTravelPlan = null;
@@ -148,7 +150,7 @@ function bindTravelModeBehavior() {
 // 获取当前用户ID
 function getCurrentUserId() {
     if (!currentUserId) {
-        currentUserId = (window.AuthSession && window.AuthSession.getUserId()) || localStorage.getItem('current_user_id');
+        currentUserId = getAuthUserId();
     }
     return currentUserId;
 }
@@ -176,7 +178,7 @@ async function startTravelPlan() {
     const destination = document.getElementById('destination').value.trim();
     
     if (!departure || !destination) {
-        alert('请填写出发地和目的地');
+        showToast('请填写出发地和目的地', 'error');
         return;
     }
     
@@ -187,31 +189,15 @@ async function startTravelPlan() {
     try {
         // 1. 生成漫游计划
         console.log('📝 正在生成漫游计划...');
-        const generateResponse = await fetch(`${API_BASE}/travel/plan/generate`, {
+        const generateResult = await apiJsonRequest('/travel/plan/generate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+            body: {
                 destination,
                 travelMode,
                 currentLocation: departure
-            })
+            }
         });
 
-        let generatePayload = null;
-        try {
-            generatePayload = await generateResponse.json();
-        } catch (parseError) {
-            generatePayload = null;
-        }
-        
-        if (!generateResponse.ok) {
-            const serverError = generatePayload?.error || `生成漫游计划失败（HTTP ${generateResponse.status}）`;
-            throw new Error(serverError);
-        }
-        
-        const generateResult = generatePayload;
         if (!generateResult?.data) {
             throw new Error('生成漫游计划失败：服务返回数据为空');
         }
@@ -224,25 +210,17 @@ async function startTravelPlan() {
         
         // 2. 开始漫游
         console.log('🚀 开始漫游...');
-        const startResponse = await fetch(`${API_BASE}/travel/plan/start`, {
+        const startResult = await apiJsonRequest('/travel/plan/start', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+            body: {
                 destination,
                 departure,
                 travelMode,
                 estimatedDays: generateResult.data.estimatedDays,
                 dailyPlans: generateResult.data.dailyPlans
-            })
+            }
         });
-        
-        if (!startResponse.ok) {
-            throw new Error('开始漫游失败');
-        }
-        
-        const startResult = await startResponse.json();
+
         console.log('✅ 旅行已开始:', startResult.data);
 
         const startedPlanId = startResult?.data?.planId;
@@ -259,11 +237,11 @@ async function startTravelPlan() {
         // 5. 开始轮询进度
         startProgressPolling();
         
-        alert(`漫游计划已生成！共 ${generateResult.data.estimatedDays} 天，${generateResult.data.dailyPlans.length} 个景点`);
+        showToast(`漫游计划已生成！共 ${generateResult.data.estimatedDays} 天，${generateResult.data.dailyPlans.length} 个景点`, 'success');
         
     } catch (error) {
         console.error('❌ 漫游计划创建失败:', error);
-        alert('创建漫游计划失败: ' + error.message);
+        showToast('创建漫游计划失败: ' + error.message, 'error');
     } finally {
         confirmBtn.disabled = false;
         confirmBtn.textContent = '开始漫游 🚀';
@@ -336,7 +314,7 @@ function renderTravelCards(travelData) {
                     let timeText = '';
                     
                     if (isCompleted) {
-                        statusIcon = '<i class="ri-checkbox-circle-fill"></i>';
+                        statusIcon = '<i class="ri-check-line"></i>';
                         statusClass = 'completed';
                         timeText = `已完成 • 耗时 ${spot.duration}分钟`;
                     } else if (isActive) {
@@ -344,7 +322,7 @@ function renderTravelCards(travelData) {
                         statusClass = '';
                         timeText = '正在游览中...';
                     } else {
-                        statusIcon = '<i class="ri-checkbox-blank-circle-line"></i>';
+                        statusIcon = '<i class="ri-arrow-right-line"></i>';
                         statusClass = '';
                         timeText = `待前往 • 预计 ${spot.duration}分钟`;
                     }
@@ -401,11 +379,11 @@ function updateTravelCardStatuses(progressData) {
         iconEl.classList.toggle('active', isActive);
         iconEl.classList.toggle('done', isCompleted);
         if (isCompleted) {
-            iconEl.innerHTML = '<i class="ri-checkbox-circle-fill"></i>';
+            iconEl.innerHTML = '<i class="ri-check-line"></i>';
         } else if (isActive) {
             iconEl.innerHTML = '<i class="ri-map-pin-user-fill"></i>';
         } else {
-            iconEl.innerHTML = '<i class="ri-checkbox-blank-circle-line"></i>';
+            iconEl.innerHTML = '<i class="ri-arrow-right-line"></i>';
         }
 
         textEl.style.color = isActive ? 'var(--accent-blue)' : '';
@@ -433,12 +411,7 @@ function startProgressPolling() {
         progressRequestInFlight = true;
 
         try {
-            const response = await fetch(`${API_BASE}/travel/progress/${getCurrentUserId()}`);
-            if (!response.ok) {
-                throw new Error('获取进度失败');
-            }
-            
-            const result = await response.json();
+            const result = await apiRequest(`/travel/progress/${getCurrentUserId()}`);
             if (result.data) {
                 updateTravelUI(result.data);
 
@@ -457,7 +430,7 @@ function startProgressPolling() {
 
                     if (!isCompletionNotified(result.data.planId)) {
                         markCompletionNotified(result.data.planId);
-                        alert('🎉 旅行已完成！');
+                        showToast('🎉 旅行已完成！', 'success');
                     }
 
                     resetToTravelStartUI();
@@ -515,21 +488,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
     
     try {
-        const response = await fetch(`${API_BASE}/travel/progress/${userId}`);
-        if (response.ok) {
-            const result = await response.json();
-            if (result.data && (result.data.status === 'traveling' || result.data.status === 'completed')) {
-                console.log('发现旅行记录，恢复旅行面板...');
-                showTravelProgress(result.data);
+        const result = await apiRequest(`/travel/progress/${userId}`);
+        if (result.data && (result.data.status === 'traveling' || result.data.status === 'completed')) {
+            console.log('发现旅行记录，恢复旅行面板...');
+            showTravelProgress(result.data);
 
-                if (result.data.status === 'traveling') {
-                    startProgressPolling();
-                } else {
-                    resetToTravelStartUI();
-                }
+            if (result.data.status === 'traveling') {
+                startProgressPolling();
             } else {
                 resetToTravelStartUI();
             }
+        } else {
+            resetToTravelStartUI();
         }
     } catch (error) {
         console.log('检查旅行状态失败:', error);

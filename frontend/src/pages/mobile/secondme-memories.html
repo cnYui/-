@@ -264,8 +264,8 @@
         </div>
     </div>
 
-    <script src="/js/auth-check.js"></script>
-    <script src="/js/services.js"></script>
+    <script type="module" src="/js/auth-check.js"></script>
+    <script type="module" src="/js/services.js"></script>
     <script>
         let isConnected = false;
         let userInfo = null;
@@ -312,7 +312,7 @@
         function handleConnect() {
             // 检查是否在移动设备模式
             if (window.innerWidth < 768) {
-                alert('⚠️ SecondMe 授权需要在桌面模式下进行\n\n请关闭 Chrome DevTools 的设备模拟模式，或使用桌面浏览器访问。');
+                window.AppUI?.showToast('SecondMe 授权需要在桌面模式下进行', 'error');
                 return;
             }
             SecondMeService.initiateLogin();
@@ -327,10 +327,10 @@
 
             try {
                 await loadMemories();
-                alert('✅ 同步成功');
+                window.AppUI?.showToast('同步成功', 'success');
             } catch (error) {
                 console.error('同步失败:', error);
-                alert('❌ 同步失败: ' + error.message);
+                window.AppUI?.showToast('同步失败: ' + error.message, 'error');
             } finally {
                 syncBtn.innerHTML = originalHTML;
                 syncBtn.disabled = false;
@@ -423,7 +423,7 @@
             if (code && state) {
                 const savedState = sessionStorage.getItem(SecondMeService.getScopedKey('secondme_oauth_state'));
                 if (state !== savedState) {
-                    alert('❌ 授权失败：状态验证失败');
+                    window.AppUI?.showToast('授权失败：状态验证失败', 'error');
                     window.location.href = '/pages/mobile/secondme-memories.html';
                     return;
                 }
@@ -439,7 +439,7 @@
                     window.location.href = '/pages/mobile/secondme-memories.html';
                 } catch (error) {
                     console.error('OAuth 回调处理失败:', error);
-                    alert('❌ 授权失败: ' + error.message);
+                    window.AppUI?.showToast('授权失败: ' + error.message, 'error');
                     window.location.href = '/pages/mobile/secondme-memories.html';
                 }
             }

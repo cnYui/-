@@ -23,3 +23,27 @@ npm-debug.log*
 # Cache
 .cache/
 .temp/
+
+# Environment variables (注意：.env 文件已包含在项目中)
+# .env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+pgdata/
+
+# Uploads (保留目录结构，但忽略上传的文件)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Output files
+backend/output/*
+!backend/output/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*~

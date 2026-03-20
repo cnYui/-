@@ -12,7 +12,13 @@ import { attachAuthSession } from './middleware/auth-session.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-dotenv.config()
+// 加载 backend/.env 文件 (__dirname 是 backend/src，所以 ../.env 是 backend/.env)
+dotenv.config({ path: path.join(__dirname, '../.env') })
+
+// 验证关键环境变量
+console.log('🔑 环境变量检查:')
+console.log('  - STEPFUN_API_KEY:', process.env.STEPFUN_API_KEY ? '已配置 ✅' : '未配置 ❌')
+console.log('  - DEEPSEEK_API_KEY:', process.env.DEEPSEEK_API_KEY ? '已配置 ✅' : '未配置 ❌')
 
 const dbRuntimeInfo = getDatabaseRuntimeInfo()
 console.log('🗄️ DB_CLIENT:', dbRuntimeInfo.dbClient)

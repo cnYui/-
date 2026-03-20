@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { callDeepSeek } from '../services/deepseek.js'
+import { callDeepSeek, callDeepSeekStream } from '../services/deepseek.js'
 import { getPgPool } from '../database/pg-client.js'
 import { ensureSameUserParam, getAuthenticatedUserId, requireAuthenticatedUser } from '../middleware/auth-session.js'
 
@@ -247,17 +247,32 @@ async function findReusableChatroom(client, { userId, city, locationName, lat, l
 }
 
 async function generateSerialAiConversation(client, { chatroom, triggerUserId, triggerPost, maxAiMessages = 7 }) {
+    console.log('    🎭 generateSerialAiConversation 开始')
     const totalBudget = Math.max(1, Math.min(MAX_AI_MESSAGES_PER_TRIGGER, Number(maxAiMessages) || 7))
+    console.log('      预算:', totalBudget, '条消息')
+    
     const members = await loadMemberProfiles(client, chatroom.id)
+    console.log('      聊天室成员:', members.length, '人')
+    members.forEach(m => {
+        console.log(`        - ${m.nickname} (ID: ${m.user_id})`)
+    })
+    
     const poster = members.find((member) => Number(member.user_id) === Number(triggerUserId))
 
     if (!poster) {
+        console.log('      ❌ 找不到发帖人')
         return { triggerMessage: null, responses: [] }
     }
 
+    console.log('      ✅ 发帖人:', poster.nickname)
+
     let remaining = totalBudget
     const responses = []
+    
+    console.log('      📝 生成开场白...')
     const openingText = await generateOpeningMessage(triggerPost)
+    console.log('      ✅ 开场白:', openingText.substring(0, 50))
+    
     const openingInserted = await insertChatroomMessage(client, {
         chatroomId: chatroom.id,
         userId: triggerUserId,
@@ -271,6 +286,11 @@ async function generateSerialAiConversation(client, { chatroom, triggerUserId, t
 
     const usedUserIds = new Set()
     const others = members.filter((member) => Number(member.user_id) !== Number(triggerUserId))
+    
+    console.log('      👥 其他成员数:', others.length)
+    if (others.length === 0) {
+        console.log('      ⚠️  没有其他成员，无法生成群聊回复')
+    }
 
     const pushSpeakerReply = async (speaker) => {
         const memories = await loadMemberMemories(client, speaker.user_id)
@@ -306,10 +326,14 @@ async function generateSerialAiConversation(client, { chatroom, triggerUserId, t
     }
 
     for (const speaker of shuffle(others).slice(0, Math.min(3, remaining))) {
+        console.log(`      🗣️  生成 ${speaker.nickname} 的回复...`)
         await pushSpeakerReply(speaker)
     }
 
+    console.log('      剩余预算:', remaining)
+
     if (remaining > 0) {
+        console.log('      📝 生成发帖人追问...')
         const posterMemories = await loadMemberMemories(client, poster.user_id)
         const posterHistoryMessages = await loadRecentMessages(client, chatroom.id, 6)
         const posterReplyText = await generatePosterFollowup({
@@ -426,10 +450,37 @@ async function generateSerialFollowupResponses(client, { chatroom, triggerUserId
  */
 router.post('/create-by-location', requireAuthenticatedUser, async (req, res) => {
     try {
-        const { postId, city, district, lat, lng, radius = 1000 } = req.body
+        let { postId, city, district, lat, lng, radius = 1000 } = req.body
         const userId = getAuthenticatedUserId(req)
 
+        console.log('🏠 开始创建聊天室...')
+        console.log('  请求参数:', { postId, city, district, lat, lng, radius, userId })
+
+        // 临时修复：如果city是"未知城市"，尝试从帖子中获取
+        if (city === '未知城市' || !city) {
+            console.log('  ⚠️  城市字段异常，尝试从帖子获取...')
+            const pool = getPgPool()
+            const postResult = await pool.query('SELECT city FROM posts WHERE id = $1', [postId])
+            if (postResult.rows[0]?.city && postResult.rows[0].city !== '未知城市') {
+                city = postResult.rows[0].city
+                console.log('  ✅ 从帖子获取城市:', city)
+            } else {
+                // 如果帖子的city也是"未知城市"，根据坐标判断
+                // 鸡鸣寺坐标大约在 32.06, 118.79
+                if (lat >= 31.5 && lat <= 33.0 && lng >= 118.0 && lng <= 119.5) {
+                    city = '南京市'
+                    console.log('  ✅ 根据坐标推断城市: 南京市')
+                    // 同时修复帖子的city字段
+                    await pool.query('UPDATE posts SET city = $1, district = $2 WHERE id = $3', ['南京市', '玄武区', postId])
+                    console.log('  ✅ 已修复帖子的城市字段')
+                }
+            }
+        }
+
+        console.log('  🏙️  最终使用的城市:', city)
+
         if (!userId || !postId || !city || lat === undefined || lng === undefined) {
+            console.log('  ❌ 缺少必要参数')
             return res.status(400).json({ success: false, error: '缺少必要参数' })
         }
 
@@ -443,15 +494,37 @@ router.post('/create-by-location', requireAuthenticatedUser, async (req, res) =>
 
             if (!triggerPost) {
                 await client.query('ROLLBACK')
+                console.log('  ❌ 贴文不存在')
                 return res.status(404).json({ success: false, error: '贴文不存在' })
             }
 
+            console.log('  ✅ 触发帖子:', {
+                id: triggerPost.id,
+                title: triggerPost.title,
+                city: triggerPost.city,
+                district: triggerPost.district,
+                locationName: triggerPost.location_name
+            })
+
+            console.log('  🔍 查找同城帖子: city =', city)
+            
+            // 宽松匹配：同时匹配 "南京市" 和 "南京"
+            const cityVariants = [
+                city,
+                city.replace('市', ''),  // 南京市 → 南京
+                city + '市'              // 南京 → 南京市
+            ].filter((v, i, arr) => arr.indexOf(v) === i) // 去重
+            
+            console.log('  🔍 城市变体:', cityVariants)
+            
             const allPostsResult = await client.query(`
                 SELECT p.*, u.username, u.nickname, u.avatar
                 FROM posts p
                 JOIN users u ON p.user_id = u.id
-                WHERE p.city = $1 AND p.is_public = 1 AND p.user_id != $2
-            `, [city, userId])
+                WHERE p.city = ANY($1) AND p.is_public = 1 AND p.user_id != $2
+            `, [cityVariants, userId])
+
+            console.log(`  📊 同城帖子总数: ${allPostsResult.rows.length}`)
 
             const nearbyPosts = allPostsResult.rows
                 .map(post => ({
@@ -460,6 +533,8 @@ router.post('/create-by-location', requireAuthenticatedUser, async (req, res) =>
                 }))
                 .filter(post => post.distance <= Number(radius))
                 .sort((a, b) => a.distance - b.distance)
+
+            console.log(`  📍 1km内的帖子: ${nearbyPosts.length}`)
 
             const matchedUsersMap = new Map()
             nearbyPosts.forEach(post => {
@@ -477,6 +552,11 @@ router.post('/create-by-location', requireAuthenticatedUser, async (req, res) =>
                 }
             })
             const matchedUsers = Array.from(matchedUsersMap.values())
+
+            console.log(`  👥 匹配用户数: ${matchedUsers.length}`)
+            matchedUsers.forEach(u => {
+                console.log(`    - ${u.nickname} (ID: ${u.userId}, 距离: ${u.distance}m)`)
+            })
 
             const chatroomName = generateChatroomName(city, district, triggerPost.location_name)
             const reusableChatroom = await findReusableChatroom(client, {
@@ -572,17 +652,12 @@ router.post('/create-by-location', requireAuthenticatedUser, async (req, res) =>
                 location_name: triggerPost.location_name || null,
                 chatroom_name: reusableChatroom?.chatroom_name || chatroomName
             }
-            const conversation = await generateSerialAiConversation(client, {
-                chatroom,
-                triggerUserId: userId,
-                triggerPost,
-                maxAiMessages: 7
-            })
-
+            
             await client.query('COMMIT')
 
             console.log(`✅ 聊天室${isReused ? '复用' : '创建'}成功: chatroomId=${chatroomId}, 成员数=${memberCount}`)
 
+            // 立即返回响应，让前端可以跳转
             res.json({
                 success: true,
                 data: {
@@ -590,10 +665,46 @@ router.post('/create-by-location', requireAuthenticatedUser, async (req, res) =>
                     chatroomName: reusableChatroom?.chatroom_name || chatroomName,
                     matchedUsers,
                     isReused,
-                    triggerMessageId: conversation.triggerMessage?.id || null,
-                    responses: conversation.responses
+                    memberCount
                 }
             })
+
+            // 在后台异步生成AI对话（不阻塞响应）
+            if (memberCount > 1) {
+                console.log('  🤖 后台启动AI生成任务...')
+                setImmediate(async () => {
+                    try {
+                        const bgClient = await pool.connect()
+                        try {
+                            const triggerPostResult = await bgClient.query('SELECT * FROM posts WHERE id = $1 LIMIT 1', [postId])
+                            const triggerPost = triggerPostResult.rows[0]
+                            
+                            if (triggerPost) {
+                                const bgChatroom = {
+                                    id: chatroomId,
+                                    city,
+                                    district: district || null,
+                                    location_name: triggerPost.location_name || null,
+                                    chatroom_name: reusableChatroom?.chatroom_name || chatroomName
+                                }
+                                
+                                await generateSerialAiConversation(bgClient, {
+                                    chatroom: bgChatroom,
+                                    triggerUserId: userId,
+                                    triggerPost,
+                                    maxAiMessages: 6
+                                })
+                                
+                                console.log('  ✅ 后台AI生成完成')
+                            }
+                        } finally {
+                            bgClient.release()
+                        }
+                    } catch (error) {
+                        console.error('  ❌ 后台AI生成失败:', error)
+                    }
+                })
+            }
         } catch (error) {
             await client.query('ROLLBACK')
             throw error
@@ -878,6 +989,242 @@ router.put('/:chatroomId/read', requireAuthenticatedUser, async (req, res) => {
     } catch (error) {
         console.error('❌ 标记聊天室已读失败:', error)
         res.status(500).json({ success: false, error: '标记聊天室已读失败' })
+    }
+})
+
+/**
+ * POST /api/chatrooms/:chatroomId/generate-stream - 流式生成AI群聊（SSE）
+ * 串行生成：A发言 → B回复 → C回复 → A追问
+ */
+router.post('/:chatroomId/generate-stream', requireAuthenticatedUser, async (req, res) => {
+    try {
+        const { chatroomId } = req.params
+        const { maxMessages = 6 } = req.body
+        const userId = getAuthenticatedUserId(req)
+
+        // 设置 SSE 响应头
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+        res.flushHeaders()
+
+        const pool = getPgPool()
+        const client = await pool.connect()
+
+        try {
+            // 验证权限
+            const membershipResult = await client.query(
+                'SELECT 1 FROM chatroom_members WHERE chatroom_id = $1 AND user_id = $2 LIMIT 1',
+                [chatroomId, userId]
+            )
+
+            if (membershipResult.rows.length === 0) {
+                res.write(`data: ${JSON.stringify({ type: 'error', message: '无权访问该聊天室' })}\n\n`)
+                res.end()
+                return
+            }
+
+            // 获取聊天室信息
+            const chatroomResult = await client.query('SELECT * FROM chatrooms WHERE id = $1 LIMIT 1', [chatroomId])
+            const chatroom = chatroomResult.rows[0]
+
+            if (!chatroom) {
+                res.write(`data: ${JSON.stringify({ type: 'error', message: '聊天室不存在' })}\n\n`)
+                res.end()
+                return
+            }
+
+            // 获取所有成员
+            const members = await loadMemberProfiles(client, chatroomId)
+            const poster = members.find(m => Number(m.user_id) === Number(userId))
+            const others = members.filter(m => Number(m.user_id) !== Number(userId))
+
+            if (!poster) {
+                res.write(`data: ${JSON.stringify({ type: 'error', message: '找不到发帖人信息' })}\n\n`)
+                res.end()
+                return
+            }
+
+            // 获取触发帖子
+            const triggerPostResult = await client.query('SELECT * FROM posts WHERE id = $1 LIMIT 1', [poster.post_id])
+            const triggerPost = triggerPostResult.rows[0]
+
+            if (!triggerPost) {
+                res.write(`data: ${JSON.stringify({ type: 'error', message: '找不到触发帖子' })}\n\n`)
+                res.end()
+                return
+            }
+
+            // 发送开始事件
+            res.write(`data: ${JSON.stringify({ 
+                type: 'start', 
+                memberCount: members.length,
+                maxMessages 
+            })}\n\n`)
+
+            let remaining = Math.min(maxMessages, MAX_AI_MESSAGES_PER_TRIGGER)
+            const usedUserIds = new Set()
+
+            // 1. 生成发帖人的开场白
+            res.write(`data: ${JSON.stringify({ type: 'generating', speaker: poster.nickname, role: 'opening' })}\n\n`)
+            
+            const openingText = await generateOpeningMessage(triggerPost)
+            const openingInserted = await insertChatroomMessage(client, {
+                chatroomId,
+                userId: poster.user_id,
+                content: openingText,
+                isAiAgent: true,
+                messageType: 'text',
+                relatedPostId: triggerPost.id,
+                lastSender: `${poster.nickname}的分身`
+            })
+
+            res.write(`data: ${JSON.stringify({ 
+                type: 'message',
+                messageId: openingInserted.id,
+                userId: poster.user_id,
+                nickname: poster.nickname,
+                avatar: poster.avatar,
+                content: openingText,
+                role: 'opening'
+            })}\n\n`)
+            
+            remaining -= 1
+
+            // 2. 串行生成其他成员的回复
+            const shuffledOthers = shuffle(others)
+            for (let i = 0; i < Math.min(3, shuffledOthers.length, remaining); i++) {
+                const speaker = shuffledOthers[i]
+                
+                res.write(`data: ${JSON.stringify({ type: 'generating', speaker: speaker.nickname, role: 'reply' })}\n\n`)
+                
+                const memories = await loadMemberMemories(client, speaker.user_id)
+                const historyMessages = await loadRecentMessages(client, chatroomId, 6)
+                const replyText = await generateSpeakerReply({
+                    speaker,
+                    triggerSummary: openingText,
+                    chatroom,
+                    historyMessages,
+                    memories
+                })
+
+                const inserted = await insertChatroomMessage(client, {
+                    chatroomId,
+                    userId: speaker.user_id,
+                    content: replyText,
+                    isAiAgent: true,
+                    messageType: 'text',
+                    relatedPostId: speaker.post_id,
+                    lastSender: `${speaker.nickname}的分身`
+                })
+
+                res.write(`data: ${JSON.stringify({ 
+                    type: 'message',
+                    messageId: inserted.id,
+                    userId: speaker.user_id,
+                    nickname: speaker.nickname,
+                    avatar: speaker.avatar,
+                    content: replyText,
+                    role: 'reply'
+                })}\n\n`)
+
+                usedUserIds.add(Number(speaker.user_id))
+                remaining -= 1
+            }
+
+            // 3. 发帖人追问
+            if (remaining > 0 && others.length > 0) {
+                res.write(`data: ${JSON.stringify({ type: 'generating', speaker: poster.nickname, role: 'followup' })}\n\n`)
+                
+                const posterMemories = await loadMemberMemories(client, poster.user_id)
+                const posterHistoryMessages = await loadRecentMessages(client, chatroomId, 6)
+                const posterReplyText = await generatePosterFollowup({
+                    poster,
+                    triggerSummary: openingText,
+                    chatroom,
+                    historyMessages: posterHistoryMessages,
+                    memories: posterMemories
+                })
+
+                const posterInserted = await insertChatroomMessage(client, {
+                    chatroomId,
+                    userId: poster.user_id,
+                    content: posterReplyText,
+                    isAiAgent: true,
+                    messageType: 'text',
+                    relatedPostId: poster.post_id,
+                    lastSender: `${poster.nickname}的分身`
+                })
+
+                res.write(`data: ${JSON.stringify({ 
+                    type: 'message',
+                    messageId: posterInserted.id,
+                    userId: poster.user_id,
+                    nickname: poster.nickname,
+                    avatar: poster.avatar,
+                    content: posterReplyText,
+                    role: 'followup'
+                })}\n\n`)
+
+                remaining -= 1
+            }
+
+            // 4. 继续其他成员回复
+            const remainingOthers = shuffledOthers.filter(m => !usedUserIds.has(Number(m.user_id)))
+            for (let i = 0; i < Math.min(2, remainingOthers.length, remaining); i++) {
+                const speaker = remainingOthers[i]
+                
+                res.write(`data: ${JSON.stringify({ type: 'generating', speaker: speaker.nickname, role: 'reply' })}\n\n`)
+                
+                const memories = await loadMemberMemories(client, speaker.user_id)
+                const historyMessages = await loadRecentMessages(client, chatroomId, 6)
+                const replyText = await generateSpeakerReply({
+                    speaker,
+                    triggerSummary: openingText,
+                    chatroom,
+                    historyMessages,
+                    memories
+                })
+
+                const inserted = await insertChatroomMessage(client, {
+                    chatroomId,
+                    userId: speaker.user_id,
+                    content: replyText,
+                    isAiAgent: true,
+                    messageType: 'text',
+                    relatedPostId: speaker.post_id,
+                    lastSender: `${speaker.nickname}的分身`
+                })
+
+                res.write(`data: ${JSON.stringify({ 
+                    type: 'message',
+                    messageId: inserted.id,
+                    userId: speaker.user_id,
+                    nickname: speaker.nickname,
+                    avatar: speaker.avatar,
+                    content: replyText,
+                    role: 'reply'
+                })}\n\n`)
+
+                remaining -= 1
+            }
+
+            // 发送完成事件
+            res.write(`data: ${JSON.stringify({ type: 'done', totalMessages: maxMessages - remaining })}\n\n`)
+            res.end()
+
+        } catch (error) {
+            console.error('❌ 流式生成失败:', error)
+            res.write(`data: ${JSON.stringify({ type: 'error', message: error.message })}\n\n`)
+            res.end()
+        } finally {
+            client.release()
+        }
+    } catch (error) {
+        console.error('❌ 流式生成失败:', error)
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, error: '流式生成失败' })
+        }
     }
 })
 

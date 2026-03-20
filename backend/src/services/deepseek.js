@@ -1,10 +1,7 @@
 import axios from 'axios';
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-const DEEPSEEK_API_ENDPOINT = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1';
-
 /**
- * 调用 DeepSeek API
+ * 调用 DeepSeek API（如果没有配置则使用StepFun）
  * @param {string} systemPrompt - 系统提示词
  * @param {string} userPrompt - 用户提示词
  * @param {object} options - 额外配置
@@ -12,35 +9,105 @@ const DEEPSEEK_API_ENDPOINT = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.
  */
 async function callDeepSeek(systemPrompt, userPrompt, options = {}) {
     try {
-        if (!DEEPSEEK_API_KEY) {
-            throw new Error('缺少 DEEPSEEK_API_KEY 环境变量');
+        // 在函数内部读取环境变量，确保dotenv已加载
+        const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+        const DEEPSEEK_API_ENDPOINT = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1';
+        const STEPFUN_API_KEY = process.env.STEPFUN_API_KEY;
+        const STEPFUN_BASE_URL = process.env.STEPFUN_BASE_URL || 'https://api.stepfun.com/v1';
+        const STEPFUN_TEXT_MODEL = process.env.STEPFUN_TEXT_MODEL || 'step-3.5-flash';
+        
+        // 优先使用DeepSeek，如果没有配置则使用StepFun
+        const useStepFun = !DEEPSEEK_API_KEY && STEPFUN_API_KEY;
+        
+        if (!DEEPSEEK_API_KEY && !STEPFUN_API_KEY) {
+            throw new Error('缺少 DEEPSEEK_API_KEY 或 STEPFUN_API_KEY 环境变量');
         }
 
+        const apiKey = useStepFun ? STEPFUN_API_KEY : DEEPSEEK_API_KEY;
+        const baseUrl = useStepFun ? STEPFUN_BASE_URL : DEEPSEEK_API_ENDPOINT;
+        const model = useStepFun ? STEPFUN_TEXT_MODEL : (options.model || 'deepseek-chat');
+
+        console.log(`  🤖 使用${useStepFun ? 'StepFun' : 'DeepSeek'} API生成内容...`);
+        console.log(`  📡 API: ${baseUrl}, Model: ${model}`);
+
         const response = await axios.post(
-            `${DEEPSEEK_API_ENDPOINT}/chat/completions`,
+            `${baseUrl}/chat/completions`,
             {
-                model: options.model || 'deepseek-chat',
+                model: model,
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
                 max_tokens: options.max_tokens || 4000,
-                temperature: options.temperature || 0.7
+                temperature: options.temperature || 0.7,
+                stream: false
             },
             {
                 headers: {
-                    'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
                 timeout: 60000
             }
         );
 
-        return response.data.choices[0].message.content;
+        const content = response.data.choices[0].message.content;
+        console.log(`  ✅ AI生成成功:`);
+        console.log(`     ${content}`);
+        return content;
     } catch (error) {
-        console.error('DeepSeek API 调用失败:', error.response?.data || error.message);
+        console.error(`  ❌ AI API 调用失败:`, error.response?.data || error.message);
         throw new Error('AI 服务调用失败');
     }
+}
+
+/**
+ * 调用 AI API 并返回流式响应（用于实时推送）
+ * @param {string} systemPrompt - 系统提示词
+ * @param {string} userPrompt - 用户提示词
+ * @param {object} options - 额外配置
+ * @returns {Promise<ReadableStream>} - 流式响应
+ */
+async function callDeepSeekStream(systemPrompt, userPrompt, options = {}) {
+    const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+    const DEEPSEEK_API_ENDPOINT = process.env.DEEPSEEK_API_ENDPOINT || 'https://api.deepseek.com/v1';
+    const STEPFUN_API_KEY = process.env.STEPFUN_API_KEY;
+    const STEPFUN_BASE_URL = process.env.STEPFUN_BASE_URL || 'https://api.stepfun.com/v1';
+    const STEPFUN_TEXT_MODEL = process.env.STEPFUN_TEXT_MODEL || 'step-3.5-flash';
+    
+    const useStepFun = !DEEPSEEK_API_KEY && STEPFUN_API_KEY;
+    
+    if (!DEEPSEEK_API_KEY && !STEPFUN_API_KEY) {
+        throw new Error('缺少 DEEPSEEK_API_KEY 或 STEPFUN_API_KEY 环境变量');
+    }
+
+    const apiKey = useStepFun ? STEPFUN_API_KEY : DEEPSEEK_API_KEY;
+    const baseUrl = useStepFun ? STEPFUN_BASE_URL : DEEPSEEK_API_ENDPOINT;
+    const model = useStepFun ? STEPFUN_TEXT_MODEL : (options.model || 'deepseek-chat');
+
+    const response = await axios.post(
+        `${baseUrl}/chat/completions`,
+        {
+            model: model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ],
+            max_tokens: options.max_tokens || 4000,
+            temperature: options.temperature || 0.7,
+            stream: true
+        },
+        {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            responseType: 'stream',
+            timeout: 60000
+        }
+    );
+
+    return response.data;
 }
 
 /**
@@ -189,6 +256,7 @@ ${spotLines || '- 暂无'}
 
 export {
     callDeepSeek,
+    callDeepSeekStream,
     generateTravelDiary,
     generateDailyRoamingSummary
 };

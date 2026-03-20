@@ -331,7 +331,7 @@ async function publishSavedRecord(recordId) {
       console.log('  地点:', post.locationName)
       console.log('  坐标:', post.lat, post.lng)
       
-      await apiJsonRequest('/chatrooms/create-by-location', {
+      const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
         method: 'POST',
         body: {
           postId: post.id,
@@ -341,19 +341,23 @@ async function publishSavedRecord(recordId) {
           lng: post.lng,
           radius: 1000
         }
-      }).then(chatroomResult => {
-        console.log('✅ 聊天室创建成功:', chatroomResult)
-        if (chatroomResult?.data) {
-          console.log('  聊天室ID:', chatroomResult.data.chatroomId)
-          console.log('  聊天室名称:', chatroomResult.data.chatroomName)
-          console.log('  匹配用户数:', chatroomResult.data.matchedUsers?.length || 0)
-          console.log('  是否复用:', chatroomResult.data.isReused)
-          console.log('  匹配用户列表:', chatroomResult.data.matchedUsers)
-        }
-      }).catch((error) => {
-        console.warn('⚠️  聊天室创建失败:', error.message)
-        console.error(error)
       })
+      
+      console.log('✅ 聊天室创建成功:', chatroomResult)
+      if (chatroomResult?.data) {
+        console.log('  聊天室ID:', chatroomResult.data.chatroomId)
+        console.log('  聊天室名称:', chatroomResult.data.chatroomName)
+        console.log('  匹配用户数:', chatroomResult.data.matchedUsers?.length || 0)
+        console.log('  是否复用:', chatroomResult.data.isReused)
+        console.log('  匹配用户列表:', chatroomResult.data.matchedUsers)
+        
+        // 如果需要生成AI对话，调用流式生成接口
+        if (chatroomResult.data.needsGeneration && chatroomResult.data.chatroomId) {
+          const matchCount = chatroomResult.data.matchedUsers?.length || 0
+          console.log('🤖 开始流式生成AI群聊...')
+          generateChatroomStreamInBackground(chatroomResult.data.chatroomId, matchCount > 0 ? 6 : 1)
+        }
+      }
     }
 
     hideLoading()
@@ -370,6 +374,79 @@ async function publishSavedRecord(recordId) {
     console.error('❌ 发布保存记录失败:', error)
     showToast('发布失败: ' + error.message, 'error')
   }
+}
+
+/**
+ * 后台流式生成聊天室AI对话（不阻塞页面跳转）
+ */
+function generateChatroomStreamInBackground(chatroomId, maxMessages = 6) {
+  const userId = getAuthUserId()
+  if (!userId) return
+  
+  console.log(`  📡 后台调用流式生成: chatroomId=${chatroomId}, maxMessages=${maxMessages}`)
+  
+  fetch(`/api/chatrooms/${chatroomId}/generate-stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId
+    },
+    body: JSON.stringify({ maxMessages })
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error('流式生成请求失败')
+    }
+    
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let messageCount = 0
+    
+    function readStream() {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          console.log('  ✅ 后台流式生成完成')
+          return
+        }
+        
+        const chunk = decoder.decode(value)
+        const lines = chunk.split('\n')
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.substring(6))
+              
+              switch (data.type) {
+                case 'start':
+                  console.log(`  🎬 开始生成: 成员数=${data.memberCount}`)
+                  break
+                case 'message':
+                  messageCount++
+                  console.log(`  💬 消息${messageCount}: ${data.nickname}`)
+                  break
+                case 'done':
+                  console.log(`  ✅ 生成完成: 共${data.totalMessages}条消息`)
+                  break
+                case 'error':
+                  console.error('  ❌ 生成错误:', data.message)
+                  break
+              }
+            } catch (e) {
+              // 忽略解析错误
+            }
+          }
+        }
+        
+        readStream()
+      }).catch(error => {
+        console.error('  ❌ 读取流失败:', error)
+      })
+    }
+    
+    readStream()
+  }).catch(error => {
+    console.error('❌ 后台流式生成失败:', error)
+  })
 }
 
 async function deleteSavedRecord(recordId) {

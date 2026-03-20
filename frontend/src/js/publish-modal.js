@@ -196,6 +196,10 @@ async function maybeUploadSelectedImage() {
 }
 
 async function createLocationChatroom(post, targetLocation) {
+    console.log('🏠 createLocationChatroom 开始...');
+    console.log('  帖子ID:', post.id);
+    console.log('  目标位置:', targetLocation);
+    
     const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
         method: 'POST',
         body: {
@@ -208,18 +212,103 @@ async function createLocationChatroom(post, targetLocation) {
         }
     });
 
+    console.log('✅ 聊天室创建响应:', chatroomResult);
+
     if (chatroomResult.success) {
         const matchCount = chatroomResult.data.matchedUsers?.length || 0;
+        const chatroomId = chatroomResult.data.chatroomId;
+        
+        console.log('  聊天室ID:', chatroomId);
+        console.log('  匹配用户数:', matchCount);
+        console.log('  是否复用:', chatroomResult.data.isReused);
+        
         if (chatroomResult.data.isReused) {
-            showToast(`发布成功！已进入同一聊天室，发现 ${matchCount} 位附近的旅行者正在续聊`, 'success');
+            showToast(`发布成功！已进入同一聊天室，发现 ${matchCount} 位附近的旅行者`, 'success');
         } else if (matchCount > 0) {
-            showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`, 'success');
+            showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，AI正在生成群聊...`, 'success');
         } else {
             showToast('发布成功！你是第一个在这里发帖的人~', 'success');
         }
     }
 
     return chatroomResult;
+}
+
+/**
+ * 流式生成聊天室AI对话
+ */
+async function generateChatroomStream(chatroomId, maxMessages = 6) {
+    try {
+        console.log(`  📡 调用流式生成接口: chatroomId=${chatroomId}, maxMessages=${maxMessages}`);
+        
+        const response = await fetch(`/api/chatrooms/${chatroomId}/generate-stream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': getPostUserId()
+            },
+            body: JSON.stringify({ maxMessages })
+        });
+        
+        if (!response.ok) {
+            throw new Error('流式生成请求失败: ' + response.statusText);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let messageCount = 0;
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+                console.log('  ✅ 流式生成完成');
+                break;
+            }
+            
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
+                        
+                        switch (data.type) {
+                            case 'start':
+                                console.log(`  🎬 开始生成: 成员数=${data.memberCount}, 最大消息数=${data.maxMessages}`);
+                                break;
+                                
+                            case 'generating':
+                                console.log(`  ⏳ 正在生成: ${data.speaker} (${data.role})`);
+                                break;
+                                
+                            case 'message':
+                                messageCount++;
+                                console.log(`  💬 消息${messageCount}: ${data.nickname} - ${data.content.substring(0, 30)}...`);
+                                break;
+                                
+                            case 'done':
+                                console.log(`  ✅ 生成完成: 共${data.totalMessages}条消息`);
+                                showToast(`AI群聊生成完成！共${data.totalMessages}条消息`, 'success');
+                                break;
+                                
+                            case 'error':
+                                console.error('  ❌ 生成错误:', data.message);
+                                showToast('AI生成失败: ' + data.message, 'error');
+                                break;
+                        }
+                    } catch (parseError) {
+                        console.error('  ❌ 解析SSE数据失败:', parseError);
+                    }
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ 流式生成失败:', error);
+        // 不显示错误提示，避免影响用户体验
+    }
 }
 
 function openSavedRecordsPage() {
@@ -931,10 +1020,20 @@ async function publishImageNote() {
         }
         
         renderPostMarkerOnMap(postResult.data);
-        await createLocationChatroom(postResult.data, targetLocation);
+        
+        // 创建聊天室
+        const chatroomResult = await createLocationChatroom(postResult.data, targetLocation);
         
         closeImageEditor();
-        window.location.href = '/pages/mobile/spark.html';
+        
+        // 直接跳转到聊天室页面，用户可以看到消息实时生成
+        if (chatroomResult.success && chatroomResult.data.chatroomId) {
+            // 使用URL参数传递聊天室ID，火花页面会自动打开
+            window.location.href = `/pages/mobile/spark.html?openChatroom=${chatroomResult.data.chatroomId}`;
+        } else {
+            // 如果没有聊天室ID，跳转到火花页面首页
+            window.location.href = '/pages/mobile/spark.html';
+        }
         
     } catch (error) {
         console.error('❌ 发布失败:', error);

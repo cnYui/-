@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天室流式生成测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0 0 24px 0;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background: #0051D5;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .messages {
+            margin-top: 24px;
+            border-top: 1px solid #eee;
+            padding-top: 24px;
+        }
+        .message {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8f8f8;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .message.generating {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+        .message.opening {
+            background: #e3f2fd;
+            border-left: 3px solid #2196F3;
+        }
+        .message.reply {
+            background: #f3e5f5;
+            border-left: 3px solid #9c27b0;
+        }
+        .message.followup {
+            background: #e8f5e9;
+            border-left: 3px solid #4caf50;
+        }
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .nickname {
+            font-weight: 600;
+            color: #333;
+            margin-right: 8px;
+        }
+        .role-badge {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            color: #666;
+        }
+        .content {
+            color: #555;
+            line-height: 1.5;
+        }
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            background: #f0f0f0;
+            color: #666;
+            font-size: 14px;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 聊天室流式生成测试</h1>
+        
+        <div class="input-group">
+            <label for="chatroomId">聊天室 ID</label>
+            <input type="number" id="chatroomId" placeholder="输入聊天室ID，例如：10" value="10">
+        </div>
+        
+        <div class="input-group">
+            <label for="maxMessages">最大消息数</label>
+            <input type="number" id="maxMessages" placeholder="最大生成消息数" value="6" min="1" max="10">
+        </div>
+        
+        <button id="startBtn" onclick="startGeneration()">开始生成</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="messages" id="messages"></div>
+    </div>
+
+    <script>
+        let eventSource = null;
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
+            statusEl.style.display = 'block';
+        }
+
+        function addMessage(data) {
+            const messagesEl = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message ' + (data.role || '');
+            
+            const roleName = {
+                'opening': '开场',
+                'reply': '回复',
+                'followup': '追问'
+            }[data.role] || '';
+            
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <span class="nickname">${data.nickname || '系统'}</span>
+                    ${roleName ? `<span class="role-badge">${roleName}</span>` : ''}
+                </div>
+                <div class="content">${data.content || ''}</div>
+            `;
+            
+            messagesEl.appendChild(messageEl);
+            messageEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function addGeneratingMessage(speaker, role) {
+            const messagesEl = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message generating';
+            messageEl.id = 'generating-msg';
+            
+            const roleName = {
+                'opening': '开场',
+                'reply': '回复',
+                'followup': '追问'
+            }[role] || '';
+            
+            messageEl.innerHTML = `
+                <div class="message-header">
+                    <span class="spinner"></span>
+                    <span class="nickname">${speaker}</span>
+                    ${roleName ? `<span class="role-badge">${roleName}</span>` : ''}
+                </div>
+                <div class="content">正在生成中...</div>
+            `;
+            
+            messagesEl.appendChild(messageEl);
+            messageEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function removeGeneratingMessage() {
+            const generatingMsg = document.getElementById('generating-msg');
+            if (generatingMsg) {
+                generatingMsg.remove();
+            }
+        }
+
+        async function startGeneration() {
+            const chatroomId = document.getElementById('chatroomId').value;
+            const maxMessages = document.getElementById('maxMessages').value;
+            const startBtn = document.getElementById('startBtn');
+            const messagesEl = document.getElementById('messages');
+            
+            if (!chatroomId) {
+                showStatus('请输入聊天室ID', 'error');
+                return;
+            }
+            
+            // 清空之前的消息
+            messagesEl.innerHTML = '';
+            
+            // 禁用按钮
+            startBtn.disabled = true;
+            startBtn.textContent = '生成中...';
+            
+            showStatus('正在连接...', 'info');
+            
+            try {
+                const response = await fetch(`http://localhost:3001/api/chatrooms/${chatroomId}/generate-stream`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-User-Id': '53'  // 测试用户ID
+                    },
+                    body: JSON.stringify({ maxMessages: parseInt(maxMessages) })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('请求失败: ' + response.statusText);
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                showStatus('已连接，等待消息...', 'info');
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (done) {
+                        break;
+                    }
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = JSON.parse(line.substring(6));
+                            
+                            console.log('收到事件:', data);
+                            
+                            switch (data.type) {
+                                case 'start':
+                                    showStatus(`开始生成，成员数: ${data.memberCount}，最大消息数: ${data.maxMessages}`, 'info');
+                                    break;
+                                    
+                                case 'generating':
+                                    removeGeneratingMessage();
+                                    addGeneratingMessage(data.speaker, data.role);
+                                    break;
+                                    
+                                case 'message':
+                                    removeGeneratingMessage();
+                                    addMessage(data);
+                                    break;
+                                    
+                                case 'done':
+                                    showStatus(`✅ 生成完成！共生成 ${data.totalMessages} 条消息`, 'success');
+                                    break;
+                                    
+                                case 'error':
+                                    showStatus('❌ 错误: ' + data.message, 'error');
+                                    break;
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('生成失败:', error);
+                showStatus('❌ 生成失败: ' + error.message, 'error');
+            } finally {
+                startBtn.disabled = false;
+                startBtn.textContent = '开始生成';
+                removeGeneratingMessage();
+            }
+        }
+    </script>
+</body>
+</html>

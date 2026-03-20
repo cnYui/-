@@ -109,6 +109,9 @@ async function openChatroom(chatroomId) {
     apiRequest(`/chatrooms/${chatroomId}/read`, { method: 'PUT' }).catch(() => {})
 
     showChatroomModal(chatroom, members, messages)
+    
+    // 启动消息轮询
+    startMessagePolling(chatroomId)
   } catch (error) {
     console.error('❌ 获取聊天室失败:', error)
     showToast(`获取聊天室失败: ${error.message}`, 'error')
@@ -123,14 +126,14 @@ function showChatroomModal(chatroom, members, messages) {
 
     if (isSystem) {
       return `
-        <div style="text-align: center; padding: 8px; color: #999; font-size: 12px;">
+        <div class="message-item system-message" data-message-id="${msg.id}" style="text-align: center; padding: 8px; color: #999; font-size: 12px;">
           ${escapeHtml(msg.content)}
         </div>
       `
     }
 
     return `
-      <div class="message-item" style="${isMe ? 'background: #E3F2FD; margin-left: 20%;' : isAi ? 'background: #FFF3E0; margin-right: 20%;' : 'margin-right: 20%;'}">
+      <div class="message-item" data-message-id="${msg.id}" style="${isMe ? 'background: #E3F2FD; margin-left: 20%;' : isAi ? 'background: #FFF3E0; margin-right: 20%;' : 'margin-right: 20%;'}">
         <div class="message-sender" style="display: flex; align-items: center; gap: 6px;">
           ${escapeHtml(msg.nickname || '用户')}
           ${isAi ? '<span style="background: var(--accent-purple); color: #fff; padding: 1px 6px; border-radius: 4px; font-size: 10px;">AI分身</span>' : ''}
@@ -220,6 +223,9 @@ function closeChatroomModal() {
   const modal = document.getElementById('chatroomModal')
   if (modal) modal.remove()
   currentChatroomId = null
+  
+  // 停止消息轮询
+  stopMessagePolling()
 
   const userId = getUserId()
   if (userId) loadChatrooms(userId)
@@ -229,10 +235,138 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userId = getUserId()
   if (userId) {
     await loadChatrooms(userId)
+    
+    // 检查URL参数，如果有openChatroom参数，自动打开聊天室
+    const urlParams = new URLSearchParams(window.location.search)
+    const openChatroomId = urlParams.get('openChatroom')
+    if (openChatroomId) {
+      console.log('🔗 URL参数指定打开聊天室:', openChatroomId)
+      // 延迟一下，确保聊天室列表加载完成
+      setTimeout(() => {
+        openChatroom(parseInt(openChatroomId))
+        // 清除URL参数
+        window.history.replaceState({}, '', window.location.pathname)
+      }, 500)
+    }
   } else {
     showEmptyState('未登录', '请先登录以查看你的聊天室')
   }
 })
+
+// 实时消息轮询
+let messagePollingInterval = null
+
+function startMessagePolling(chatroomId) {
+  console.log('🔄 开始轮询聊天室消息:', chatroomId)
+  
+  // 清除之前的轮询
+  if (messagePollingInterval) {
+    clearInterval(messagePollingInterval)
+  }
+  
+  // 每2秒轮询一次新消息
+  messagePollingInterval = setInterval(async () => {
+    if (currentChatroomId === chatroomId) {
+      try {
+        const result = await apiRequest(`/chatrooms/${chatroomId}/detail`)
+        if (result?.success) {
+          const { messages } = result.data
+          updateChatroomMessages(messages)
+        }
+      } catch (error) {
+        console.error('❌ 轮询消息失败:', error)
+      }
+    } else {
+      // 如果聊天室已关闭，停止轮询
+      clearInterval(messagePollingInterval)
+      messagePollingInterval = null
+    }
+  }, 2000)
+}
+
+function stopMessagePolling() {
+  if (messagePollingInterval) {
+    console.log('⏹️  停止轮询消息')
+    clearInterval(messagePollingInterval)
+    messagePollingInterval = null
+  }
+}
+
+function updateChatroomMessages(newMessages) {
+  const messagesContainer = document.getElementById('messagesList')
+  if (!messagesContainer) {
+    console.warn('⚠️  找不到消息容器 #messagesList')
+    return
+  }
+  
+  // 获取当前显示的消息ID
+  const currentMessageIds = Array.from(messagesContainer.querySelectorAll('.message-item'))
+    .map(el => el.dataset.messageId)
+    .filter(Boolean)
+  
+  console.log('  当前消息数:', currentMessageIds.length)
+  console.log('  新消息总数:', newMessages.length)
+  
+  // 找出新消息
+  const newMessageItems = newMessages.filter(msg => 
+    !currentMessageIds.includes(String(msg.id))
+  )
+  
+  if (newMessageItems.length > 0) {
+    console.log(`💬 收到 ${newMessageItems.length} 条新消息`)
+    
+    // 添加新消息到界面
+    newMessageItems.forEach(msg => {
+      const messageEl = createMessageElement(msg)
+      messagesContainer.appendChild(messageEl)
+    })
+    
+    // 滚动到底部
+    const scrollContainer = document.getElementById('messagesContainer')
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight
+    }
+  }
+}
+
+function createMessageElement(msg) {
+  const messageEl = document.createElement('div')
+  messageEl.className = 'message-item'
+  messageEl.dataset.messageId = msg.id
+  
+  const isAI = msg.isAiAgent === 1 || msg.isAiAgent === true
+  const isSystem = msg.messageType === 'system'
+  
+  if (isSystem) {
+    messageEl.classList.add('system-message')
+    messageEl.innerHTML = `
+      <div class="system-message-content">
+        <i class="ri-information-line"></i>
+        ${escapeHtml(msg.content)}
+      </div>
+    `
+  } else {
+    messageEl.classList.add(isAI ? 'ai-message' : 'user-message')
+    messageEl.innerHTML = `
+      <div class="message-avatar">
+        ${msg.avatar ? `<img src="${msg.avatar}" alt="${escapeHtml(msg.nickname)}">` : '<i class="ri-user-line"></i>'}
+      </div>
+      <div class="message-content">
+        <div class="message-header">
+          <span class="message-nickname">${escapeHtml(msg.nickname)}</span>
+          ${isAI ? '<span class="ai-badge">AI分身</span>' : ''}
+          <span class="message-time">${formatRelativeTime(msg.createdAt)}</span>
+        </div>
+        <div class="message-text">${escapeHtml(msg.content)}</div>
+      </div>
+    `
+  }
+  
+  // 添加淡入动画
+  messageEl.style.animation = 'fadeInUp 0.3s ease-out'
+  
+  return messageEl
+}
 
 window.openChatroom = openChatroom
 window.closeChatroomModal = closeChatroomModal

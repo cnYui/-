@@ -94,7 +94,7 @@ docker-compose up -d
 
 ```bash
 # 拉取 PostgreSQL 镜像
-docker pull postgres:latest
+docker pull postgres:15-alpine
 
 # 启动容器
 docker run --name mingri-postgres \
@@ -103,24 +103,30 @@ docker run --name mingri-postgres \
   -e POSTGRES_USER=postgres \
   -p 5432:5432 \
   -v mingri_postgres_data:/var/lib/postgresql/data \
-  -d postgres:latest
+  -d postgres:15-alpine
 ```
 
 #### 验证数据库是否启动成功
 
 ```bash
 # 查看容器状态
-docker ps | grep mingri-postgres
+docker ps
+
+# 查看数据库列表
+docker exec -it <容器名> psql -U postgres -l
 
 # 进入数据库
-docker exec -it mingri-postgres psql -U postgres -d mingri_lvtu
+docker exec -it <容器名> psql -U postgres -d mingri_lvtu
 
 # 在 psql 中执行
-\l              # 查看所有数据库
+\dt             # 查看所有表
+\d posts        # 查看 posts 表结构
 \q              # 退出
 ```
 
-### 5. 初始化数据库表结构
+### 5. 初始化数据库表结构（首次部署必须执行）
+
+**重要**：首次部署时，必须执行数据库初始化脚本来创建表结构。
 
 ```bash
 cd backend
@@ -130,7 +136,26 @@ node src/database/init.js
 你应该看到类似输出：
 ```
 ✅ PostgreSQL 连接成功
-✅ 数据库初始化完成
+📝 开始创建数据库表结构...
+✅ 数据库表结构创建完成
+```
+
+如果表已存在，脚本会自动跳过，不会重复创建。
+
+#### 验证表是否创建成功
+
+```bash
+# 查看所有表
+docker exec <容器名> psql -U postgres -d mingri_lvtu -c "\dt"
+
+# 应该看到以下表：
+# - users (用户表)
+# - posts (帖子表)
+# - chatrooms (聊天室表)
+# - chatroom_members (聊天室成员表)
+# - chatroom_messages (聊天消息表)
+# - travel_plans (旅行计划表)
+# - 等等...
 ```
 
 ### 6. 配置环境变量
@@ -151,6 +176,8 @@ STEPFUN_API_KEY=your_api_key_here
 ```
 
 **重要**：请将 `STEPFUN_API_KEY` 替换为你自己的 API Key。
+
+**注意**：如果你的 PostgreSQL 容器名称不是 `mingri-postgres`，请确保 `POSTGRES_HOST` 指向正确的容器名或使用 `127.0.0.1`。
 
 ### 7. 启动项目
 
@@ -242,11 +269,16 @@ docker run --rm \
 如果需要完全重置数据库：
 
 ```bash
-# 停止并删除容器
+# 方法一：删除所有表并重新创建
+docker exec <容器名> psql -U postgres -d mingri_lvtu -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# 重新初始化表结构
+cd backend
+node src/database/init.js
+
+# 方法二：完全删除容器和数据（慎用）
 docker stop mingri-postgres
 docker rm mingri-postgres
-
-# 删除数据卷（会清空所有数据）
 docker volume rm mingri_postgres_data
 
 # 重新启动容器
@@ -421,24 +453,49 @@ docker load < mingri-lvtu.tar.gz
    cd mingri-lvtu
    ```
 
-2. **配置环境变量**
-   ```bash
-   # 编辑 backend/.env，设置你的 STEPFUN_API_KEY
-   ```
-
-3. **启动数据库和应用**
+2. **启动 PostgreSQL 数据库**
    ```bash
    docker-compose up -d
    ```
 
-4. **初始化数据库**
+3. **安装依赖**
    ```bash
-   docker exec mingri-app node backend/src/database/init.js
+   # 安装后端依赖
+   cd backend
+   npm install
+   
+   # 安装前端依赖
+   cd ../frontend
+   npm install
    ```
 
-5. **访问应用**
+4. **配置环境变量**
+   ```bash
+   # 编辑 backend/.env，设置你的 STEPFUN_API_KEY
+   # 其他配置保持默认即可
    ```
-   http://localhost:3001
+
+5. **初始化数据库表结构（首次部署必须执行）**
+   ```bash
+   cd backend
+   node src/database/init.js
+   ```
+
+6. **启动应用**
+   ```bash
+   # 启动后端（终端1）
+   cd backend
+   npm run dev
+   
+   # 启动前端（终端2）
+   cd frontend
+   npm run dev
+   ```
+
+7. **访问应用**
+   ```
+   前端: http://localhost:5173
+   后端: http://localhost:3001
    ```
 
 ## 🔑 获取 API Keys

@@ -51,12 +51,16 @@
 
 ## 🚀 快速开始
 
+> 📋 **部署前必读**：请先查看 [部署前检查清单](./DEPLOYMENT_CHECKLIST.md)，确保所有必需项已准备就绪。
+
 ### 1. 环境要求
 
 - Node.js >= 18.0.0
 - Docker Desktop (用于运行 PostgreSQL)
 - npm 或 yarn
 - Git
+- StepFun API Key（必需）
+- 高德地图 API Keys（必需）
 
 ### 2. 克隆项目
 
@@ -160,24 +164,31 @@ docker exec <容器名> psql -U postgres -d mingri_lvtu -c "\dt"
 
 ### 6. 配置环境变量
 
-后端的 `.env` 文件已包含在项目中，默认配置如下：
+> ⚠️ **重要**：请参考 [部署前检查清单](./DEPLOYMENT_CHECKLIST.md) 获取详细的配置说明。
+
+后端的 `.env` 文件已包含在项目中，你需要修改以下必需配置：
 
 ```env
-# 数据库配置
+# ========== 必需配置 ==========
+
+# StepFun AI API（必需）
+STEPFUN_API_KEY=your_stepfun_api_key_here
+
+# 高德地图 API（必需）
+AMAP_WEB_SERVICE_KEYS=your_amap_key1,your_amap_key2
+
+# 数据库配置（保持默认即可）
 DB_CLIENT=postgres
 POSTGRES_HOST=127.0.0.1
 POSTGRES_PORT=5432
 POSTGRES_DB=mingri_lvtu
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-
-# StepFun AI API（需要替换为你的 Key）
-STEPFUN_API_KEY=your_api_key_here
 ```
 
-**重要**：请将 `STEPFUN_API_KEY` 替换为你自己的 API Key。
-
-**注意**：如果你的 PostgreSQL 容器名称不是 `mingri-postgres`，请确保 `POSTGRES_HOST` 指向正确的容器名或使用 `127.0.0.1`。
+**注意**：
+- 如果你的 PostgreSQL 容器名称不是 `mingri-postgres`，请确保 `POSTGRES_HOST` 指向正确的容器名或使用 `127.0.0.1`
+- 小红书相关配置（`XHS_IMAGES_ROOT` 等）为可选项，不影响核心功能
 
 ### 7. 启动项目
 
@@ -502,17 +513,26 @@ docker load < mingri-lvtu.tar.gz
 
 ### StepFun API Key（必需）
 
+**用途**：AI 智能群聊对话生成、图片理解等核心功能
+
 1. 访问 [阶跃星辰官网](https://platform.stepfun.com/)
 2. 注册账号并登录
 3. 进入控制台，创建 API Key
 4. 将 API Key 填入 `.env` 文件的 `STEPFUN_API_KEY`
 
-### 高德地图 API Key（可选）
+### 高德地图 API Keys（必需）
+
+**用途**：地理编码、逆地理编码、地址解析等地图功能
 
 1. 访问 [高德开放平台](https://lbs.amap.com/)
 2. 注册开发者账号
 3. 创建应用，获取 Web 服务 API Key
-4. 将 API Key 填入 `.env` 文件的 `AMAP_WEB_SERVICE_KEYS`
+4. 将 API Keys 填入 `.env` 文件的 `AMAP_WEB_SERVICE_KEYS`（多个 Key 用逗号分隔）
+
+**提示**：可以创建多个 Key 用于负载均衡，例如：
+```env
+AMAP_WEB_SERVICE_KEYS=key1,key2,key3
+```
 
 ## 📝 开发指南
 

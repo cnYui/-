@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设置</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/common.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--primary-bg);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .settings-page {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .settings-card {
+            margin-top: 12px;
+            background: #fff;
+            border: 4px solid #000;
+            border-radius: 16px;
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 1);
+            overflow: hidden;
+        }
+
+        .settings-title {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0;
+            padding: 20px;
+            border-bottom: 4px solid #000;
+        }
+
+        .settings-content {
+            padding: 20px;
+        }
+
+        .settings-desc {
+            margin: 0 0 20px;
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 14px 16px;
+            border: 4px solid #000;
+            border-radius: 10px;
+            background: #ffeb3b;
+            color: #111;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 1);
+        }
+
+        .logout-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-page">
+        <div class="settings-card">
+            <h1 class="settings-title">设置</h1>
+            <div class="settings-content">
+                <p class="settings-desc">退出当前账号后，将清除本浏览器可访问的全部 Cookie，并返回登录页面。</p>
+                <button class="logout-btn" id="logoutBtn">退出当前账号</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/js/auth-check.js"></script>
+    <script>
+        function clearAllCookies() {
+            const cookies = document.cookie ? document.cookie.split(';') : [];
+            const hostname = window.location.hostname;
+            const domainParts = hostname.split('.');
+            const domainVariants = [''];
+
+            for (let i = 0; i < domainParts.length; i++) {
+                const domain = domainParts.slice(i).join('.');
+                domainVariants.push(domain);
+                domainVariants.push(`.${domain}`);
+            }
+
+            const pathVariants = ['/'];
+            const pathSegments = window.location.pathname.split('/').filter(Boolean);
+            let currentPath = '';
+            for (const seg of pathSegments) {
+                currentPath += `/${seg}`;
+                pathVariants.push(currentPath);
+            }
+
+            cookies.forEach((cookie) => {
+                const eqPos = cookie.indexOf('=');
+                const name = (eqPos > -1 ? cookie.slice(0, eqPos) : cookie).trim();
+                if (!name) return;
+
+                document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                document.cookie = `${name}=; Max-Age=0; path=/`;
+
+                for (const domain of domainVariants) {
+                    if (!domain) continue;
+                    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
+                    document.cookie = `${name}=; Max-Age=0; path=/; domain=${domain}`;
+                }
+
+                for (const path of pathVariants) {
+                    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
+                    document.cookie = `${name}=; Max-Age=0; path=${path}`;
+                    for (const domain of domainVariants) {
+                        if (!domain) continue;
+                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${domain}`;
+                        document.cookie = `${name}=; Max-Age=0; path=${path}; domain=${domain}`;
+                    }
+                }
+            });
+        }
+
+        function logoutCurrentUser() {
+            clearAllCookies();
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace('/pages/mobile/login.html');
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', logoutCurrentUser);
+    </script>
+</body>
+</html>

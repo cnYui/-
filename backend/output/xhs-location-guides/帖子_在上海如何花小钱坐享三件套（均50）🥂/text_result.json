@@ -1,0 +1,142 @@
+{
+  "noteId": "67c1baa4000000000603f90e",
+  "title": "在上海如何花小钱坐享三件套（均50）🥂",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "roof bar",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "1️⃣roof bar"
+      ],
+      "confidence": 0.6
+    },
+    {
+      "location": "日矢",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "2️⃣日矢"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "FLAIR BAR",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "3️⃣FLAIR BAR"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "看得见风景的咖啡馆",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "4️⃣看得见风景的咖啡馆"
+      ],
+      "confidence": 0.5
+    },
+    {
+      "location": "北外滩manner",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "5️⃣北外滩manner"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "船长酒吧",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "6️⃣船长酒吧"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "邮政博物馆",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "7️⃣邮政博物馆"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "外滩观景台",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "8️⃣外滩观景台"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "外摆渡桥",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "9️⃣外摆渡桥"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "北外滩滨江公园",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "🔟北外滩滨江公园"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "外滩8号",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "1️⃣1️⃣外滩8号"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "whisky bar",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "1️⃣2️⃣whisky bar"
+      ],
+      "confidence": 0.6
+    },
+    {
+      "location": "苏河湾",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "1️⃣3️⃣苏河湾"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "北外滩江边咖啡店",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "1️⃣4️⃣北外滩江边咖啡店"
+      ],
+      "confidence": 0.5
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子推荐了上海14个 drinking and viewing spots，包括屋顶酒吧、日式酒吧、咖啡馆、观景台和公园等，部分为免费机位，整体强调性价比和拍照打卡。",
+  "uncertain": [
+    "roof bar具体指哪家酒吧",
+    "看得见风景的咖啡馆具体名称",
+    "whisky bar具体指哪家酒吧",
+    "北外滩江边咖啡店具体名称",
+    "船长酒吧具体指哪家店"
+  ]
+}

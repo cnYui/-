@@ -1,0 +1,136 @@
+{
+  "noteId": "68d7cd9a000000000e00c124",
+  "title": "惠山古镇这样逛 全网最全打卡路线图文攻略",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "惠山古镇地铁站6号口",
+      "city": "无锡",
+      "suggestions": [],
+      "evidence": [
+        "①惠山古镇地铁站6号口"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "宝善坊",
+      "city": "无锡",
+      "suggestions": [
+        "打卡无锡网红文字墙",
+        "附近星巴克有绿色惠山文字墙"
+      ],
+      "evidence": [
+        "宝善坊（无锡网红文字墙）",
+        "第二站宝善坊旁边的星巴克有一面绿色的惠山文字墙"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "惠山直街",
+      "city": "无锡",
+      "suggestions": [
+        "核心街道，两边有很多免费开放的祠堂，建议慢慢品味"
+      ],
+      "evidence": [
+        "开始走惠山古镇核心的惠山直街",
+        "惠山直街两边有很多免费开放的祠堂"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "范文正公祠",
+      "city": "无锡",
+      "suggestions": [],
+      "evidence": [
+        "③范文正公祠"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "惠山门",
+      "city": "无锡",
+      "suggestions": [
+        "收费区域和免费区域的分界线"
+      ],
+      "evidence": [
+        "④惠山门（进入惠山古镇收费区域）",
+        "收费区域和免费区域的分界线就是惠山门"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "天下第二泉",
+      "city": "无锡",
+      "suggestions": [
+        "收费区域内的景点"
+      ],
+      "evidence": [
+        "⑤天下第二泉",
+        "惠山古镇的天下第二泉和惠山寺、寄畅园在收费区域内"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "惠山寺",
+      "city": "无锡",
+      "suggestions": [
+        "必看明朝银杏和御碑亭",
+        "收费区域内的景点"
+      ],
+      "evidence": [
+        "⑥惠山寺（必看明朝银杏和御碑亭）",
+        "惠山古镇的天下第二泉和惠山寺、寄畅园在收费区域内"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "寄畅园",
+      "city": "无锡",
+      "suggestions": [
+        "内含两个龙光塔网红机位",
+        "收费区域内的景点"
+      ],
+      "evidence": [
+        "⑦寄畅园（内含两个龙光塔网红机位）",
+        "惠山古镇的天下第二泉和惠山寺、寄畅园在收费区域内"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "人杰地灵牌坊",
+      "city": "无锡",
+      "suggestions": [
+        "春晚分会场机位"
+      ],
+      "evidence": [
+        "⑧人杰地灵牌坊（春晚分会场机位）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "惠山映月里",
+      "city": "无锡",
+      "suggestions": [
+        "现代主意风格阿炳雕塑"
+      ],
+      "evidence": [
+        "⑨惠山映月里（现代主意风格阿炳雕塑）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "寺塘泾桥",
+      "city": "无锡",
+      "suggestions": [
+        "惠山古镇水乡经典机位"
+      ],
+      "evidence": [
+        "⑩寺塘泾桥（惠山古镇水乡经典机位）"
+      ],
+      "confidence": 1
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "惠山古镇位于无锡市区，提供一条从地铁站6号口出发的3-4小时打卡路线，涵盖免费祠堂街道和收费园林古迹，推荐顺序游览，注意联票70元。",
+  "uncertain": []
+}

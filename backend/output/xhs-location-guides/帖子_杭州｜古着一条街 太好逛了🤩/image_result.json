@@ -1,0 +1,188 @@
+{
+  "noteId": "682c08c60000000012001585",
+  "title": "杭州｜古着一条街 太好逛了🤩",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "杭州古着一条街",
+      "city": "杭州",
+      "suggestions": [
+        "探索各种古着店，体验不同的复古风格",
+        "适合喜欢古着、中古店和复古服饰的游客",
+        "可以找到大牌包包、精致首饰、复古外套、可爱手办等"
+      ],
+      "evidence": [
+        "杭州古着中古店地图",
+        "Ginza vintage: 有大牌包包、精致小首饰和衣服",
+        "古着杂货铺: 甜酷风，古着服饰种类多",
+        "小烦大人miravana: 适合男生，很多好看的复古外套",
+        "古着杂货 bigwa vintage: 百平杂货铺，古着、原创品牌、海外收藏等",
+        "半间古着小铺: 品类丰富颜色大胆，服饰类为主"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "location": "吃谷猫",
+      "city": "杭州",
+      "suggestions": [
+        "轻松熊爱好者的天堂，价格美丽",
+        "可以找到很多角落生物的周边商品",
+        "适合购买可爱玩偶、挂件和小饰品"
+      ],
+      "evidence": [
+        "轻松熊天堂 价格很美丽",
+        "还有很多角落生物"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Ginza Vintage",
+      "city": "杭州",
+      "suggestions": [
+        "寻找大牌包包、精致小首饰和复古衣服",
+        "店内有丰富的古着商品和装饰品"
+      ],
+      "evidence": [
+        "Ginza vintage 介绍：有大牌包包、精致小首饰和衣服"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "location": "古着小铺",
+      "city": "杭州",
+      "suggestions": [
+        "探索各种古着服饰和配饰",
+        "有丰富的项链、手链和复古玩具"
+      ],
+      "evidence": [
+        "图中展示了许多服饰、配饰和玩具"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "Best Scene",
+      "city": "杭州",
+      "suggestions": [
+        "适合拍摄照片，提供拍立得和人生四格服务",
+        "营业时间：周一至周五 12:00-22:00，周六、周日 10:00-22:00"
+      ],
+      "evidence": [
+        "Photograph 拍立得/人生四格",
+        "营业时间 周一~周五 12:00-22:00 周六、周日 10:00-22:00"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Bubbie",
+      "city": "杭州",
+      "suggestions": [
+        "购买复古相机和胶卷相机，适合摄影爱好者",
+        "店内有各种手动胶卷相机和相关配件"
+      ],
+      "evidence": [
+        "CAMMAN 手动胶卷相机",
+        "buyer store & vintage"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "任意门古着店",
+      "city": "杭州",
+      "suggestions": [
+        "逛美式复古风格的古着店，购买赛车风格和卡通风格的服饰",
+        "店内有各种古着夹克、衬衫和卡通周边"
+      ],
+      "evidence": [
+        "多为赛车风格 和卡通风格 太酷了吧",
+        "Anywhere Door Vintage"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Rich",
+      "city": "杭州",
+      "suggestions": [
+        "购买迪士尼玩偶和其他可爱玩偶，适合收藏爱好者",
+        "店内有大量迪士尼玩偶和其他种类的玩偶、服饰、杂志"
+      ],
+      "evidence": [
+        "迪士尼的玩偶 qq的",
+        "VINTAGE STORE"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Lin BrandNew",
+      "city": "杭州",
+      "suggestions": [
+        "逛逛杂货福袋，价格实惠，内含惊喜",
+        "挑选Kitty系列发饰，价格便宜",
+        "购买可爱的小饰品和玩偶",
+        "探索店内独特的电话机装饰墙，拍照打卡"
+      ],
+      "evidence": [
+        "杂货福袋 半39（价值80+）",
+        "Kitty发夹发饰 半10-18",
+        "袜子 半9.9 买2送1"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "怪牙商店 (Odd Tooth Store)",
+      "city": "杭州",
+      "suggestions": [
+        "欣赏走廊上的创意装饰和海报",
+        "挑选各种古怪可爱的古着帽子和包包",
+        "探索店内丰富的古着服饰和配件"
+      ],
+      "evidence": [
+        "怪牙商店 Odd Tooth Store",
+        "手作 古着",
+        "走廊上贴满了创意海报和装饰"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [
+    "杭州 古着一条街",
+    "吃谷猫",
+    "轻松熊天堂 价格很美丽 还有很多角落生物",
+    "Ginza Vintage",
+    "Best Scene Photograph",
+    "Half Room 古着小铺",
+    "Lin BrandNew vintage古着屋",
+    "BUBBLE",
+    "古着杂货 BIGWA VINTAGE",
+    "GINZA VINTAGE 2nd floor vint",
+    "Rich VINTAGE STORE",
+    "Best Scene",
+    "Photograph",
+    "拍立得/人生四格",
+    "bigfig撕拉片 宝丽来、牙医机特写 富士拍立得 韩系人生四格 kpop专辑",
+    "Bubbie",
+    "buyer store & vintage",
+    "VINTAGE",
+    "CAMMAN",
+    "手动胶卷相机",
+    "135 CAMERA",
+    "任意门古着店",
+    "多为赛车风格 和卡通风格 太酷了吧",
+    "Rich",
+    "VINTAGE STORE",
+    "迪士尼的玩偶 qq的",
+    "杂货福袋",
+    "半39（价值80+）",
+    "袜子 半9.9 买2送1",
+    "Kitty发夹发饰 半10-18",
+    "Lin BrandNew",
+    "怪牙商店",
+    "Odd Tooth Store",
+    "手作",
+    "古着"
+  ],
+  "summary": "帖子主要介绍了杭州古着一条街的多家店铺，包括古着店、中古店和杂货铺，每家店都有其独特的风格和商品，适合喜欢复古、古着文化的游客前去探索。重点推荐了‘吃谷猫’、‘Ginza Vintage’和‘古着小铺’等店铺，提供了关于商品类型和风格的建议。；帖子介绍了杭州古着一条街的几家店铺，包括Best Scene（摄影服务）、Bubbie（复古相机和胶卷相机）、任意门古着店（美式复古服饰）和Rich（迪士尼玩偶和收藏品）。每家店铺都有其独特的风格和商品，适合不同兴趣的游客。；帖子介绍了杭州古着一条街的两家店铺：Lin BrandNew 和 怪牙商店。Lin BrandNew 以杂货、福袋、Kitty 发饰和可爱饰品为特色；怪牙商店则以手作和古着为主，走廊装饰充满创意，店内有丰富的古着帽子、包包和服饰。",
+  "uncertain": [
+    "具体店铺的完整名称和详细地址未完全提供",
+    "部分店铺的特色仅通过图片展示，未有文字说明"
+  ]
+}

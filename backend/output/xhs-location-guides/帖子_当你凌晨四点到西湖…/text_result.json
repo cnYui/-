@@ -1,0 +1,21 @@
+{
+  "noteId": "687f66dc000000002001b663",
+  "title": "当你凌晨四点到西湖…",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "西湖",
+      "city": "杭州",
+      "suggestions": [],
+      "evidence": [
+        "当你凌晨四点到西湖…"
+      ],
+      "confidence": 0.5
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子标题提及凌晨四点到西湖，但正文和标签均未提供具体游玩建议、路线或避坑信息。",
+  "uncertain": [
+    "帖子内容过于简略，无法提取任何具体的玩法、建议或游览顺序信息。"
+  ]
+}

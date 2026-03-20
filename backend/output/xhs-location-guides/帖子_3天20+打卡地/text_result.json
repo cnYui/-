@@ -1,0 +1,21 @@
+{
+  "noteId": "68ca23d10000000013016d3f",
+  "title": "3天20+打卡地",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "无锡",
+      "city": "无锡",
+      "suggestions": [],
+      "evidence": [
+        "#无锡[话题]#"
+      ],
+      "confidence": 0.3
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子标题提及3天20+打卡地，但正文未提供具体地点和玩法建议，仅标签显示目的地为无锡。",
+  "uncertain": [
+    "具体打卡地点和玩法建议未在正文中列出"
+  ]
+}

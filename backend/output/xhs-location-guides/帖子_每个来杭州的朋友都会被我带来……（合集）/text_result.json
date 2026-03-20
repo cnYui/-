@@ -1,0 +1,187 @@
+{
+  "noteId": "67b5b4f70000000006028a41",
+  "title": "每个来杭州的朋友都会被我带来……（合集）",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "海洋馆",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "p1海洋馆"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "理安寺",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "p2理安寺"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "莫干山",
+      "city": "",
+      "suggestions": [
+        "喝咖啡"
+      ],
+      "evidence": [
+        "p3去莫干山喝咖啡"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "小冰岛",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "p4小冰岛"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "大屋顶书馆",
+      "city": "",
+      "suggestions": [
+        "看书"
+      ],
+      "evidence": [
+        "p5大屋顶书馆看书"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "青年路",
+      "city": "",
+      "suggestions": [
+        "citywalk"
+      ],
+      "evidence": [
+        "p6青年路citywalk"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "西湖北山街",
+      "city": "",
+      "suggestions": [
+        "lalaland"
+      ],
+      "evidence": [
+        "p7西湖北山街lalaland"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "浙江文学馆",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "p8浙江文学馆"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "西湖",
+      "city": "",
+      "suggestions": [
+        "日出"
+      ],
+      "evidence": [
+        "p9西湖日出"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "龙坞",
+      "city": "",
+      "suggestions": [
+        "日落"
+      ],
+      "evidence": [
+        "p10龙坞日落"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "杭州小巴黎阳台",
+      "city": "杭州",
+      "suggestions": [],
+      "evidence": [
+        "p11杭州小巴黎阳台"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "威尼斯水城",
+      "city": "",
+      "suggestions": [
+        "日落"
+      ],
+      "evidence": [
+        "p12威尼斯水城日落"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "湿地博物馆",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "p13湿地博物馆"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "粮仓艺术公园",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "p14粮仓艺术公园"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "钱塘江",
+      "city": "",
+      "suggestions": [
+        "蓝调时刻"
+      ],
+      "evidence": [
+        "p15钱塘江蓝调时刻"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "满觉陇",
+      "city": "",
+      "suggestions": [
+        "吸氧"
+      ],
+      "evidence": [
+        "p16去满觉陇吸氧"
+      ],
+      "confidence": 1
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "该帖子合集推荐了杭州及周边的16个地点，包括海洋馆、理安寺、莫干山、小冰岛、大屋顶书馆、青年路、西湖北山街、浙江文学馆、西湖、龙坞、杭州小巴黎阳台、威尼斯水城、湿地博物馆、粮仓艺术公园、钱塘江和满觉陇，主要建议涉及拍照、看书、citywalk、观赏日出日落、喝咖啡、吸氧等，适合周末和朋友一起体验浪漫氛围。",
+  "uncertain": [
+    "海洋馆的具体名称和确切位置",
+    "理安寺的完整名称和位置",
+    "小冰岛的具体位置和含义",
+    "大屋顶书馆的具体位置",
+    "青年路的具体位置",
+    "西湖北山街的具体描述和位置",
+    "威尼斯水城的具体位置",
+    "湿地博物馆的具体位置（尽管杭州有湿地博物馆，但文本未指定）",
+    "粮仓艺术公园的具体位置",
+    "杭州小巴黎阳台的具体位置",
+    "莫干山的城市归属（文本未明确是否属于杭州）",
+    "蓝调时刻的具体时间定义",
+    "lalaland的具体指代",
+    "除杭州小巴黎阳台外，其他地点的城市归属均未在文本中明确"
+  ]
+}

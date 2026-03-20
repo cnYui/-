@@ -1,0 +1,28 @@
+{
+  "noteId": "67ff5e58000000001d008fd3",
+  "title": "西湖的这个机位和dazz简直绝配🥰",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "孤山",
+      "city": "杭州",
+      "suggestions": [
+        "使用Dazz相机App中的D Fun S滤镜拍摄",
+        "适合拍摄胶片感、故事感、氛围感的照片",
+        "推荐情侣在此机位互动拍照",
+        "机位位于星巴克杭州孤山店门口"
+      ],
+      "evidence": [
+        "位置在星巴克杭州孤山店门口",
+        "#胶片定格瞬间[话题]#",
+        "#故事感[话题]#",
+        "#我们是彼此的摄影师[话题]#",
+        "#氛围感[话题]#"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "推荐在西湖景区内的孤山区域， specifically at the entrance of Starbucks Hangzhou Gushan Store，使用Dazz相机App的D Fun S滤镜进行拍摄，以营造胶片感、故事感和氛围感，尤其适合情侣拍照。",
+  "uncertain": []
+}

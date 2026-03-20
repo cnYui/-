@@ -1,7 +1,6 @@
-import { apiJsonRequest, apiRequest } from './utils/api.js'
+import { apiRequest } from './utils/api.js'
 import { getAuthUserId } from './utils/auth.js'
 import { escapeHtml, formatRelativeTime, showToast } from './utils/helpers.js'
-import { getCachedUserName } from './utils/user-cache.js'
 
 let currentChatroomId = null
 
@@ -171,14 +170,10 @@ function showChatroomModal(chatroom, members, messages) {
           </div>
         </div>
 
-        <div style="padding: 16px 24px; border-top: 4px solid var(--border-color); display: flex; gap: 12px;">
-          <input type="text" id="messageInput" placeholder="说点什么..."
-            style="flex: 1; padding: 12px; border: 3px solid var(--border-color); border-radius: 8px; font-size: 14px;"
-            onkeypress="if(event.key==='Enter') sendMessage()">
-          <button onclick="sendMessage()"
-            style="padding: 12px 20px; background: var(--accent-blue); color: #fff; border: 3px solid var(--border-color); border-radius: 8px; font-weight: 700; cursor: pointer;">
-            发送
-          </button>
+        <div style="padding: 16px 24px; border-top: 4px solid var(--border-color); background: #f9f9f9;">
+          <div style="font-size: 13px; line-height: 1.5; color: #555; border: 2px solid #ddd; border-radius: 10px; padding: 12px 14px; background: #fff8dc;">
+            当前版本为 AI 分身自动群聊模式，暂不支持你手动输入消息。
+          </div>
         </div>
       </div>
     </div>
@@ -193,51 +188,7 @@ function showChatroomModal(chatroom, members, messages) {
 }
 
 async function sendMessage() {
-  const input = document.getElementById('messageInput')
-  const content = input?.value.trim()
-
-  if (!content || !currentChatroomId) return
-
-  input.value = ''
-
-  try {
-    const result = await apiJsonRequest('/chatrooms/message', {
-      method: 'POST',
-      body: {
-        chatroomId: currentChatroomId,
-        content,
-        isAiAgent: false
-      }
-    })
-
-    if (result.success) {
-      appendMessage({
-        nickname: getCachedUserName(),
-        content,
-        isAiAgent: false,
-        userId: getUserId(),
-        createdAt: new Date().toISOString()
-      })
-
-      const aiResult = await apiJsonRequest('/chatrooms/generate-responses', {
-        method: 'POST',
-        body: {
-          chatroomId: currentChatroomId,
-          triggerMessage: content
-        }
-      })
-
-      if (aiResult.success && aiResult.data.responses) {
-        for (const resp of aiResult.data.responses) {
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-          appendMessage(resp)
-        }
-      }
-    }
-  } catch (error) {
-    console.error('❌ 发送消息失败:', error)
-    showToast(`发送失败: ${error.message}`, 'error')
-  }
+  showToast('当前版本为 AI 分身自动群聊，暂不支持手动发言', 'info')
 }
 
 function appendMessage(msg) {

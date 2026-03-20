@@ -1,0 +1,26 @@
+{
+  "noteId": "65f5b5cb000000001203eb34",
+  "title": "今天在鼋头渚看见",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "鼋头渚",
+      "city": "",
+      "suggestions": [
+        "拍照打卡",
+        "作为网红景点游览"
+      ],
+      "evidence": [
+        "今天在鼋头渚看见",
+        "好多人在那拍照都成景点了",
+        "#鼋头渚[话题]#"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "鼋头渚是一个受欢迎的网红拍照景点。",
+  "uncertain": [
+    "鼋头渚所在城市（原文未提及）"
+  ]
+}

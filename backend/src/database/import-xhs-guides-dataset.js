@@ -38,6 +38,31 @@ function uniqueStrings(items) {
   return result;
 }
 
+function splitTags(value) {
+  return String(value || '')
+    .split(/[|,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function buildMergedTags(item) {
+  const rawTags = splitTags(item?.tags);
+  const llmLocationTags = Array.isArray(item?.dedupedLocations)
+    ? item.dedupedLocations.map((entry) => String(entry?.name || '').trim()).filter(Boolean)
+    : [];
+  const primaryLocation = String(item?.locationName || item?.llmPrimaryLocation || '').trim();
+  const primaryCity = String(item?.city || item?.llmPrimaryCity || '').trim();
+
+  const merged = uniqueStrings([
+    ...rawTags,
+    ...llmLocationTags,
+    primaryLocation,
+    primaryCity
+  ]);
+
+  return merged.length ? merged.join(',') : null;
+}
+
 function inferCategory(text = '') {
   const source = String(text || '');
   if (/(美食|咖啡|奶茶|餐厅|火锅|小吃|甜品|早午餐|吃|饭)/i.test(source)) return '吃';
@@ -83,7 +108,7 @@ async function upsertPostByDataset(client, item, fallbackUserId) {
   const lng = Number(item?.lng);
   const createdAt = toIsoTime(item?.visitTime || item?.createdAt);
   const category = item?.category || inferCategory(`${title || ''} ${content || ''}`);
-  const tags = item?.tags || null;
+  const tags = buildMergedTags(item);
   const userId = Number(item?.userId) || fallbackUserId;
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {

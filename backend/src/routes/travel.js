@@ -5,6 +5,7 @@ import { getPgPool } from '../database/pg-client.js';
 import { ensureSameUserParam, getAuthenticatedUserId, requireAuthenticatedUser } from '../middleware/auth-session.js';
 
 const router = Router();
+const SPOT_STAY_SECONDS = 15;
 
 const CITY_CENTER = {
     南京: { lat: 32.060255, lng: 118.796877 },
@@ -12,6 +13,45 @@ const CITY_CENTER = {
     上海: { lat: 31.230416, lng: 121.473701 },
     北京: { lat: 39.9042, lng: 116.4074 }
 };
+
+function resolvePlanningCity({ destination, currentLocation }) {
+    const destinationCity = String(destination || '').trim();
+    const departureCity = String(currentLocation || '').trim();
+    return destinationCity || departureCity || '南京';
+}
+
+function pickNearestSpot(anchor, candidates) {
+    if (!anchor || !Array.isArray(candidates) || candidates.length === 0) {
+        return { picked: null, rest: [] };
+    }
+
+    let bestIndex = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i < candidates.length; i++) {
+        const spot = candidates[i];
+        const distance = haversineDistanceMeters(anchor.lat, anchor.lng, Number(spot.lat), Number(spot.lng));
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestIndex = i;
+        }
+    }
+
+    const picked = candidates[bestIndex];
+    const rest = candidates.filter((_, index) => index !== bestIndex);
+    return { picked, rest };
+}
+
+function pickRandomSpot(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+        return { picked: null, rest: [] };
+    }
+
+    const randomIndex = Math.floor(Math.random() * candidates.length);
+    const picked = candidates[randomIndex];
+    const rest = candidates.filter((_, index) => index !== randomIndex);
+    return { picked, rest };
+}
 
 const TEMPLATE_SPOTS = {
     南京: [
@@ -104,9 +144,9 @@ function buildMinimalFallbackPlan(destination) {
     return {
         estimatedDays: 1,
         dailyPlans: [
-            { day: 1, location: `${destination}城市漫步`, description: '从城市中心开始漫游', duration: 1, lat: center.lat, lng: center.lng, category: '逛' },
-            { day: 1, location: `${destination}特色美食`, description: '寻找本地口味体验', duration: 1, lat: center.lat, lng: center.lng, category: '吃' },
-            { day: 1, location: `${destination}夜景散步`, description: '收尾放松，感受城市夜色', duration: 1, lat: center.lat, lng: center.lng, category: '玩' }
+            { day: 1, location: `${destination}城市漫步`, description: '从城市中心开始漫游', duration: SPOT_STAY_SECONDS, lat: center.lat, lng: center.lng, category: '逛' },
+            { day: 1, location: `${destination}特色美食`, description: '寻找本地口味体验', duration: SPOT_STAY_SECONDS, lat: center.lat, lng: center.lng, category: '吃' },
+            { day: 1, location: `${destination}夜景散步`, description: '收尾放松，感受城市夜色', duration: SPOT_STAY_SECONDS, lat: center.lat, lng: center.lng, category: '玩' }
         ]
     };
 }
@@ -120,7 +160,7 @@ function shuffleArray(input) {
     return arr;
 }
 
-function buildRoamingPlanFromSpots(destination, spots) {
+function buildRoamingPlanFromSpots(destination, spots, options = {}) {
     const unique = [];
     const seen = new Set();
 
@@ -131,44 +171,46 @@ function buildRoamingPlanFromSpots(destination, spots) {
         unique.push(spot);
     }
 
-    const center = CITY_CENTER[destination] || CITY_CENTER['南京'];
-    const now = Date.now();
-    const scored = unique.map((spot) => {
-        const category = inferSpotCategory(spot);
-        const distance = Number.isFinite(Number(spot.lat)) && Number.isFinite(Number(spot.lng))
-            ? haversineDistanceMeters(center.lat, center.lng, Number(spot.lat), Number(spot.lng))
-            : 12000;
-        const distanceScore = Math.max(0, 1 - distance / 30000);
-
-        const createdTime = spot.created_at ? new Date(spot.created_at).getTime() : now;
-        const ageDays = Math.max(0, (now - createdTime) / (1000 * 60 * 60 * 24));
-        const recencyScore = Math.max(0.2, 1 - ageDays / 60);
-
-        const tagCount = String(spot.tags || '').split(',').filter(Boolean).length;
-        const diversityBase = Math.min(1, tagCount / 6);
-
-        return {
+    const routableSpots = unique
+        .map((spot) => ({
             ...spot,
-            category,
-            _score: recencyScore * 0.4 + distanceScore * 0.35 + diversityBase * 0.25 + Math.random() * 0.2
-        };
-    });
+            lat: Number(spot.lat),
+            lng: Number(spot.lng),
+            category: inferSpotCategory(spot)
+        }))
+        .filter((spot) => Number.isFinite(spot.lat) && Number.isFinite(spot.lng));
 
+    const targetCount = Math.max(3, Math.min(12, routableSpots.length));
+    const cityCenter = CITY_CENTER[destination] || null;
+    const cityScopedSpots = cityCenter
+        ? routableSpots.filter((spot) => haversineDistanceMeters(cityCenter.lat, cityCenter.lng, spot.lat, spot.lng) <= 70000)
+        : routableSpots;
+    const basePool = cityScopedSpots.length >= 3 ? cityScopedSpots : routableSpots;
+
+    let remaining = [...basePool];
     const selected = [];
-    const categoryCount = { 吃: 0, 逛: 0, 玩: 0 };
-    const targetCount = Math.max(3, Math.min(12, scored.length));
-    const remaining = [...scored];
+
+    const firstPick = pickRandomSpot(remaining);
+    if (firstPick.picked) {
+        selected.push(firstPick.picked);
+        remaining = firstPick.rest;
+    }
 
     while (selected.length < targetCount && remaining.length > 0) {
-        remaining.sort((a, b) => {
-            const penaltyA = (categoryCount[a.category] || 0) * 0.12;
-            const penaltyB = (categoryCount[b.category] || 0) * 0.12;
-            return (b._score - penaltyB) - (a._score - penaltyA);
-        });
+        const lastSpot = selected[selected.length - 1];
+        const anchor = lastSpot
+            ? { lat: Number(lastSpot.lat), lng: Number(lastSpot.lng) }
+            : null;
 
-        const picked = remaining.shift();
-        selected.push(picked);
-        categoryCount[picked.category] = (categoryCount[picked.category] || 0) + 1;
+        if (!anchor) break;
+
+        const nearest = pickNearestSpot(anchor, remaining);
+        if (!nearest.picked) {
+            break;
+        }
+
+        selected.push(nearest.picked);
+        remaining = nearest.rest;
     }
 
     if (!selected.length) {
@@ -182,7 +224,7 @@ function buildRoamingPlanFromSpots(destination, spots) {
         day: clampDays(Math.floor(index / spotsPerDay) + 1),
         location: normalizeLocationName(spot),
         description: normalizeDescription(spot),
-        duration: 1,
+        duration: SPOT_STAY_SECONDS,
         lat: Number(spot.lat),
         lng: Number(spot.lng),
         mood: spot.mood || null,
@@ -194,7 +236,7 @@ function buildRoamingPlanFromSpots(destination, spots) {
     return { estimatedDays, dailyPlans };
 }
 
-async function fetchCandidatePostsByCity(destination) {
+async function fetchCandidatePostsByCity(city) {
     const pool = getPgPool();
     const result = await pool.query(`
         SELECT id, title, content, tags, mood, category, city, location_name, lat, lng, image_url, created_at
@@ -202,7 +244,7 @@ async function fetchCandidatePostsByCity(destination) {
         WHERE city = $1 AND is_public = 1
         ORDER BY created_at DESC
         LIMIT 200
-    `, [destination]);
+    `, [city]);
     return result.rows;
 }
 
@@ -326,30 +368,31 @@ router.post('/plan/generate', requireAuthenticatedUser, async (req, res) => {
             });
         }
 
-        console.log(`📝 收到生成漫游计划请求: 用户${userId}, ${currentLocation} → ${destination}`);
+        const planningCity = resolvePlanningCity({ destination, currentLocation, travelMode });
+        console.log(`📝 收到生成漫游计划请求: 用户${userId}, ${currentLocation} → ${destination} (规划城市: ${planningCity})`);
 
         let planData = null;
         let warning = null;
 
         try {
-            const candidatePosts = await fetchCandidatePostsByCity(destination);
+            const candidatePosts = await fetchCandidatePostsByCity(planningCity);
             if (candidatePosts.length >= 3) {
-                planData = buildRoamingPlanFromSpots(destination, candidatePosts);
+                planData = buildRoamingPlanFromSpots(planningCity, candidatePosts, { currentLocation });
                 console.log(`🧭 使用真实帖子池生成漫游计划: ${candidatePosts.length} 条候选`);
             } else {
-                const template = TEMPLATE_SPOTS[destination] || [];
-                planData = buildRoamingPlanFromSpots(destination, [...candidatePosts, ...template]);
-                warning = '城市帖子不足，已混合模板点位生成漫游计划';
+                const template = TEMPLATE_SPOTS[planningCity] || [];
+                planData = buildRoamingPlanFromSpots(planningCity, [...candidatePosts, ...template], { currentLocation });
+                warning = '规划城市帖子不足，已混合模板点位生成漫游计划';
                 console.log(`⚠️ 城市帖子不足(${candidatePosts.length})，回退模板点位`);
             }
         } catch (candidateError) {
             console.error('⚠️ 候选池查询失败，回退最小计划:', candidateError.message);
-            planData = buildMinimalFallbackPlan(destination);
+            planData = buildMinimalFallbackPlan(planningCity);
             warning = '候选池异常，已使用最小可运行计划';
         }
 
         if (!planData || !Array.isArray(planData.dailyPlans) || planData.dailyPlans.length === 0) {
-            planData = buildMinimalFallbackPlan(destination);
+            planData = buildMinimalFallbackPlan(planningCity);
             warning = warning || '候选池为空，已使用最小可运行计划';
         }
         
@@ -395,7 +438,7 @@ router.post('/plan/start', requireAuthenticatedUser, async (req, res) => {
         const planId = insertResult.rows[0].id;
         const firstStep = safeDailyPlans[0];
         const now = new Date();
-        const expectedCompleteTime = new Date(now.getTime() + 5 * 1000);
+        const expectedCompleteTime = new Date(now.getTime() + SPOT_STAY_SECONDS * 1000);
 
         await pool.query(
             `INSERT INTO travel_progress (user_id, plan_id, current_day, step_index, progress_status, location, remaining_seconds, expected_complete_time)
@@ -410,7 +453,7 @@ router.post('/plan/start', requireAuthenticatedUser, async (req, res) => {
                remaining_seconds = EXCLUDED.remaining_seconds,
                expected_complete_time = EXCLUDED.expected_complete_time,
                last_update = NOW()`,
-            [userId, planId, firstStep.day || 1, 0, 'traveling', firstStep.location, 5, expectedCompleteTime.toISOString()]
+            [userId, planId, firstStep.day || 1, 0, 'traveling', firstStep.location, SPOT_STAY_SECONDS, expectedCompleteTime.toISOString()]
         );
 
         await pool.query(
@@ -433,7 +476,7 @@ router.post('/plan/start', requireAuthenticatedUser, async (req, res) => {
                 currentProgress: {
                     stepIndex: 0,
                     location: firstStep.location,
-                    remainingSeconds: 5,
+                    remainingSeconds: SPOT_STAY_SECONDS,
                     expectedCompleteTime: expectedCompleteTime.toISOString()
                 }
             } 
@@ -509,14 +552,14 @@ router.get('/progress/:userId', requireAuthenticatedUser, ensureSameUserParam('u
                         console.warn(`⚠️ 用户 ${userId} 的下一站数据异常，跳过自动推进`);
                         return res.json({ success: true, data: progress });
                     }
-                    const nextExpectedTime = new Date(now.getTime() + 5 * 1000);
+                    const nextExpectedTime = new Date(now.getTime() + SPOT_STAY_SECONDS * 1000);
 
                     await pool.query(
                         `UPDATE travel_progress
                          SET current_day = $1, step_index = $2, location = $3,
-                             expected_complete_time = $4, last_update = NOW()
-                         WHERE user_id = $5`,
-                        [nextSpot.day, nextIndex, nextSpot.location, nextExpectedTime.toISOString(), userId]
+                            remaining_seconds = $4, expected_complete_time = $5, last_update = NOW()
+                         WHERE user_id = $6`,
+                        [nextSpot.day, nextIndex, nextSpot.location, SPOT_STAY_SECONDS, nextExpectedTime.toISOString(), userId]
                     );
 
                     console.log(`✅ 已推进到: ${nextSpot.location} (第${nextSpot.day}天)`);
@@ -540,7 +583,7 @@ router.get('/progress/:userId', requireAuthenticatedUser, ensureSameUserParam('u
                     progress.stepIndex = nextIndex;
                     progress.status = 'traveling';
                     progress.location = nextSpot.location;
-                    progress.remainingSeconds = 5;
+                    progress.remainingSeconds = SPOT_STAY_SECONDS;
                     progress.expectedCompleteTime = nextExpectedTime.toISOString();
                 } else {
                     await pool.query(

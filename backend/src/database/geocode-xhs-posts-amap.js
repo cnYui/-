@@ -1,3 +1,4 @@
+import fs from 'fs';
 import dotenv from 'dotenv';
 import axios from 'axios';
 import { getPgPool, closePgPool } from './pg-client.js';
@@ -12,6 +13,7 @@ const AMAP_WEB_SERVICE_KEYS = (process.env.AMAP_WEB_SERVICE_KEYS
   .filter(Boolean);
 const AMAP_GEOCODE_URL = process.env.AMAP_GEOCODE_URL || 'https://restapi.amap.com/v3/geocode/geo';
 const AMAP_PLACE_TEXT_URL = process.env.AMAP_PLACE_TEXT_URL || 'https://restapi.amap.com/v3/place/text';
+const NOTE_IDS_FILE = process.env.XHS_NOTE_IDS_FILE || '';
 const LIMIT = Math.max(1, Number(process.env.XHS_AMAP_GEOCODE_LIMIT || 200));
 const REQUEST_INTERVAL_MS = Math.max(100, Number(process.env.XHS_AMAP_GEOCODE_INTERVAL_MS || 220));
 const REQUEST_TIMEOUT_MS = Math.max(3000, Number(process.env.XHS_AMAP_GEOCODE_TIMEOUT_MS || 10000));
@@ -42,12 +44,55 @@ function inferCityFromText(...texts) {
   return '';
 }
 
+function normalizeAmapCityText(value) {
+  return String(value || '')
+    .replace(/市|地区|自治州|盟/g, '')
+    .trim();
+}
+
+function extractAmapCityTokens(hit = {}) {
+  return [
+    hit.city,
+    hit.cityName,
+    hit.province,
+    hit.provinceName,
+    hit.district,
+    hit.adName,
+    hit.formattedAddress
+  ]
+    .map(normalizeAmapCityText)
+    .filter(Boolean);
+}
+
+function isHitConsistentWithCity(hit, cityHint) {
+  const target = normalizeAmapCityText(cityHint);
+  if (!target) return true;
+  const tokens = extractAmapCityTokens(hit);
+  return tokens.some((token) => token.includes(target) || target.includes(token));
+}
+
 function parseLocation(locationText) {
   const [lngRaw, latRaw] = String(locationText || '').split(',');
   const lng = Number(lngRaw);
   const lat = Number(latRaw);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
   return { lat, lng };
+}
+
+function loadNoteIds(filePath) {
+  const target = String(filePath || '').trim();
+  if (!target || !fs.existsSync(target)) return [];
+
+  const payload = JSON.parse(fs.readFileSync(target, 'utf8'));
+  const noteIds = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload.noteIds)
+      ? payload.noteIds
+      : [];
+
+  return noteIds
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
 }
 
 function buildAddressCandidates(row) {
@@ -114,6 +159,9 @@ async function geocodeByAmap(key, address, cityHint) {
   return {
     ...location,
     formattedAddress: first.formatted_address || null,
+    province: first.province || null,
+    city: Array.isArray(first.city) ? first.city[0] || null : first.city || null,
+    district: first.district || null,
     level: first.level || null,
     source: 'geocode'
   };
@@ -147,6 +195,9 @@ async function searchPlaceByAmap(key, keywords, cityHint) {
   return {
     ...location,
     formattedAddress: first.address || null,
+    provinceName: first.pname || null,
+    cityName: first.cityname || null,
+    adName: first.adname || null,
     level: 'poi',
     source: 'place_text'
   };
@@ -163,7 +214,7 @@ async function geocodeWithFallback(addressCandidates, cityHint) {
         for (const cityOption of cityOptions) {
           try {
             const geo = await geocodeByAmap(key, address, cityOption);
-            if (geo) return geo;
+            if (geo && isHitConsistentWithCity(geo, cityHint || cityOption)) return geo;
           } catch (error) {
             lastError = error;
             const msg = String(error.message || '');
@@ -174,7 +225,7 @@ async function geocodeWithFallback(addressCandidates, cityHint) {
 
           try {
             const poi = await searchPlaceByAmap(key, address, cityOption);
-            if (poi) return poi;
+            if (poi && isHitConsistentWithCity(poi, cityHint || cityOption)) return poi;
           } catch (error) {
             lastError = error;
             const msg = String(error.message || '');
@@ -200,6 +251,7 @@ async function run() {
 
   const pool = getPgPool();
   const client = await pool.connect();
+  const noteIds = loadNoteIds(NOTE_IDS_FILE);
 
   try {
     const before = await client.query(
@@ -209,17 +261,29 @@ async function run() {
        WHERE source_platform = 'xiaohongshu'`
     );
 
-    const rows = await client.query(
-      `SELECT id, source_note_id, title, content, city, district, location_name, lat, lng, geo_confidence
-       FROM posts
-       WHERE source_platform = 'xiaohongshu'
-         AND location_name IS NOT NULL
-         AND location_name <> ''
-         AND (geo_confidence IS NULL OR geo_confidence <> 'amap_geocode')
-       ORDER BY created_at DESC
-       LIMIT $1`,
-      [LIMIT]
-    );
+    const rows = noteIds.length
+      ? await client.query(
+          `SELECT id, source_note_id, title, content, city, district, location_name, lat, lng, geo_confidence
+           FROM posts
+           WHERE source_platform = 'xiaohongshu'
+             AND location_name IS NOT NULL
+             AND location_name <> ''
+             AND source_note_id = ANY($2)
+           ORDER BY created_at DESC
+           LIMIT $1`,
+          [LIMIT, noteIds]
+        )
+      : await client.query(
+          `SELECT id, source_note_id, title, content, city, district, location_name, lat, lng, geo_confidence
+           FROM posts
+           WHERE source_platform = 'xiaohongshu'
+             AND location_name IS NOT NULL
+             AND location_name <> ''
+             AND (geo_confidence IS NULL OR geo_confidence <> 'amap_geocode')
+           ORDER BY created_at DESC
+           LIMIT $1`,
+          [LIMIT]
+        );
 
     let success = 0;
     let skipped = 0;

@@ -1,0 +1,23 @@
+{
+  "noteId": "6817371c0000000022027f20",
+  "title": "🕶️上海巨人展  |  GM HAUS🥐",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "上海巨人展",
+      "city": "上海",
+      "suggestions": [
+        "前往二楼人脸展区拍照，出片效果极佳",
+        "目前展览无需排队，可放心前往"
+      ],
+      "evidence": [
+        "人脸在二楼，真的超级出片呀～",
+        "现在已经不用排队啦"
+      ],
+      "confidence": 1
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "上海巨人展目前无需排队，二楼人脸展区拍照效果佳，适合打卡。",
+  "uncertain": []
+}

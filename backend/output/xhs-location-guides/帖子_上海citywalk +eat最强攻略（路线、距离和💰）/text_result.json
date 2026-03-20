@@ -1,0 +1,372 @@
+{
+  "noteId": "6518e6fe000000001f03e514",
+  "title": "上海citywalk +eat最强攻略（路线、距离和💰）",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "汇联商厦",
+      "city": "上海",
+      "suggestions": [
+        "一站式购齐多家美食店铺，包括白玉兰、虹口糕团、哈尔滨工厂、鲍师傅、泸溪河、莉莲蛋挞、沈大成、Manner",
+        "店铺排列集中，方便依次购买"
+      ],
+      "evidence": [
+        "📍汇联商厦 1⃣️白玉兰 2⃣️虹口糕团 3⃣️哈尔滨工厂 4⃣️鲍师傅 5⃣️泸溪河 6⃣️莉莲蛋挞 7⃣️沈大成 8⃣️Manner 直接一排走过去 非常方便 一站式购齐"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "美罗城",
+      "city": "上海",
+      "suggestions": [
+        "包含广莲申、泽田本家、裕莲茶楼、宝珠奶酪、KOI等多家美食店铺，分布在1f、2f、4f",
+        "可一站式探索不同楼层的美食"
+      ],
+      "evidence": [
+        "📍美罗城 1⃣️广莲申1f 2⃣️泽田本家2f 3⃣️裕莲茶楼2f 4⃣️宝珠奶酪4f 5⃣️KOI 4f"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "港汇城",
+      "city": "上海",
+      "suggestions": [
+        "有PAOPAO店铺位于-1f"
+      ],
+      "evidence": [
+        "📍港汇城 PAOPAO −1f"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "百联徐汇商业广场",
+      "city": "上海",
+      "suggestions": [
+        "有鹅庄台湾美食店",
+        "靠近交通大学，可结合参观交大和钱学森图书馆",
+        "建议提前预约鹅庄"
+      ],
+      "evidence": [
+        "📍百联徐汇商业广场店 鹅庄•台湾美食 就在交大附近 可以提前预约一下去交大转转"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "鹅庄",
+      "city": "上海",
+      "suggestions": [
+        "作为city walk起点，出门直走400米开始路线，途中经过交通大学和钱学森图书馆",
+        "可品尝台湾美食"
+      ],
+      "evidence": [
+        "鹅庄出门直走400米，途中会经过交通大学、钱学森图书馆"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "交通大学",
+      "city": "上海",
+      "suggestions": [
+        "在city walk途中经过，可顺便参观",
+        "位于百联徐汇商业广场附近"
+      ],
+      "evidence": [
+        "途中会经过交通大学"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "钱学森图书馆",
+      "city": "上海",
+      "suggestions": [
+        "在city walk途中经过",
+        "与交通大学相邻"
+      ],
+      "evidence": [
+        "途中会经过交通大学、钱学森图书馆"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "淮海中路",
+      "city": "上海",
+      "suggestions": [
+        "从鹅庄右转进入淮海中路，然后直走350米到武康大楼",
+        "是city walk的重要路段"
+      ],
+      "evidence": [
+        "右转进入📍淮海中路，紧接着直走350米到📍武康大楼"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "武康大楼",
+      "city": "上海",
+      "suggestions": [
+        "从淮海中路直走350米可达",
+        "附近有宋美龄故居，适合拍照和历史参观"
+      ],
+      "evidence": [
+        "紧接着直走350米到📍武康大楼、宋美龄故居"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "武康路",
+      "city": "上海",
+      "suggestions": [
+        "从武康大楼沿武康路走900米右转到复兴西路",
+        "街道两旁有历史建筑和小店，适合漫步"
+      ],
+      "evidence": [
+        "沿着📍武康路走900米右转到📍复兴西路"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "复兴西路",
+      "city": "上海",
+      "suggestions": [
+        "从武康路右转后走500米左转到乌鲁木齐中路",
+        "沿途有特色建筑"
+      ],
+      "evidence": [
+        "再走500米左转到📍乌鲁木齐中路"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "乌鲁木齐中路",
+      "city": "上海",
+      "suggestions": [
+        "从复兴西路左转进入，直走350米左转到安福路",
+        "途中会路过麻布屋、Tagi等小店，适合逛街"
+      ],
+      "evidence": [
+        "会路过麻布屋、Tagi，直走350米左转到📍安福路"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "安福路",
+      "city": "上海",
+      "suggestions": [
+        "从乌鲁木齐中路左转进入，有bm、话梅、阳光粮品等店铺",
+        "再走350米到mbd",
+        "是时尚和购物热点"
+      ],
+      "evidence": [
+        "直走350米左转到📍安福路，bm、话梅、阳光粮品都在这，再走350米到📍mbd"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "mbd",
+      "city": "上海",
+      "suggestions": [
+        "从安福路走350米到达",
+        "可能是个店铺或地点，具体未详"
+      ],
+      "evidence": [
+        "再走350米到📍mbd"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Basdban",
+      "city": "上海",
+      "suggestions": [
+        "从mbd走1.1公里到达",
+        "位于愚园路区域，可能是个咖啡馆或店铺"
+      ],
+      "evidence": [
+        "然后走1.1公里到📍Basdban，也就是📍愚园路这一条街"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "愚园路",
+      "city": "上海",
+      "suggestions": [
+        "Basdban所在街道，很好逛，有众多小店",
+        "适合漫步购物"
+      ],
+      "evidence": [
+        "也就是📍愚园路这一条街，这条街也很好逛"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Drunkbaker",
+      "city": "上海",
+      "suggestions": [
+        "从Basdban走1.3公里到达",
+        "可能是个烘焙店"
+      ],
+      "evidence": [
+        "Basdban 走1.3公里到📍Drunkbaker"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "Moneyshops",
+      "city": "上海",
+      "suggestions": [
+        "从Drunkbaker走250米到达",
+        "可能是个商店"
+      ],
+      "evidence": [
+        "再走250米到📍Moneyshops"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "PIE BIRD",
+      "city": "上海",
+      "suggestions": [
+        "第二条线起点之一",
+        "可能是个餐厅或咖啡馆"
+      ],
+      "evidence": [
+        "第二条线🚶 📍PIE BIRD"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "PAIN CHAUD百丘",
+      "city": "上海",
+      "suggestions": [
+        "第二条线地点",
+        "可能是个面包店或咖啡馆"
+      ],
+      "evidence": [
+        "📍PAIN CHAUD百丘"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "静安寺",
+      "city": "上海",
+      "suggestions": [
+        "第二条线重要景点，可参观寺庙",
+        "附近有静安公园"
+      ],
+      "evidence": [
+        "📍静安寺"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "静安公园",
+      "city": "上海",
+      "suggestions": [
+        "适合拍照",
+        "靠近静安寺"
+      ],
+      "evidence": [
+        "📍静安公园（适合拍照）"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "旬福食堂",
+      "city": "上海",
+      "suggestions": [
+        "第二条线美食点，可在此用餐"
+      ],
+      "evidence": [
+        "📍旬福食堂"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "莱莱小笼",
+      "city": "上海",
+      "suggestions": [
+        "第三条线美食点，可品尝小笼包",
+        "可能位于外滩附近"
+      ],
+      "evidence": [
+        "📍莱莱小笼"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "沈大成",
+      "city": "上海",
+      "suggestions": [
+        "在汇联商厦作为一站式购齐的一部分，以糕团出名",
+        "在第三条线作为独立美食点，可品尝传统点心"
+      ],
+      "evidence": [
+        "第一条线中在汇联商厦列表有沈大成",
+        "第三条线📍沈大成"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "舒蔡记生煎",
+      "city": "上海",
+      "suggestions": [
+        "第三条线美食点，可品尝生煎",
+        "可能位于外滩附近"
+      ],
+      "evidence": [
+        "📍舒蔡记生煎"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "渝囡囡·沪式火锅",
+      "city": "上海",
+      "suggestions": [
+        "第三条线美食点，沪式火锅",
+        "可能位于外滩附近"
+      ],
+      "evidence": [
+        "📍渝囡囡·沪式火锅"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "外滩",
+      "city": "上海",
+      "suggestions": [
+        "可坐2元轮渡到陆家嘴",
+        "欣赏夜景和风景",
+        "是上海标志性景点"
+      ],
+      "evidence": [
+        "去外滩坐2r轮渡📷陆家嘴三件套"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "陆家嘴",
+      "city": "上海",
+      "suggestions": [
+        "有陆家嘴三件套（东方明珠、上海中心等）可观看",
+        "从外滩坐轮渡可达"
+      ],
+      "evidence": [
+        "去外滩坐2r轮渡📷陆家嘴三件套"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "华山路",
+      "city": "上海",
+      "suggestions": [
+        "Day2 city walk起点，从华山路开始，经淮海中路、武康路等到达mbd",
+        "沿途有历史建筑和小店"
+      ],
+      "evidence": [
+        "华山路➡️淮海中路➡️武康路➡️ 复兴西路➡️乌鲁木齐中路➡️安福路➡️mbd"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子推荐了上海三条主要city walk路线：第一条线以汇联商厦美食购物开始，经交通大学、钱学森图书馆、武康大楼、武康路等历史街区，最终至愚园路区域；第二条线包括PIE BIRD、静安寺、静安公园等；第三条线聚焦外滩附近的小笼、生煎等美食。建议分三天游玩，并提供了详细的距离和顺序。还提到外滩轮渡观陆家嘴三件套。",
+  "uncertain": []
+}

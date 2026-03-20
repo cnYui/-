@@ -9,16 +9,20 @@ let postsFetchAbortController = null;
 let markerRenderVersion = 0;
 let markerBatchTimer = null;
 let mapInitialized = false;
-const MAX_RENDER_MARKERS = 200;
+const MAX_RENDER_MARKERS = 500;
 const FIRST_BATCH_MARKERS = 30;
 const MARKER_BATCH_SIZE = 40;
 const MAP_VIEW_STATE_KEY = 'main_map_view_state';
-const MAP_POSTS_CACHE_KEY = 'main_map_posts_cache';
+const MAP_POSTS_CACHE_KEY = 'main_map_posts_cache_v3';
 const MAP_POSTS_CACHE_TTL_MS = 2 * 60 * 1000;
 const MAP_POSTS_CACHE_REFRESH_MS = 15 * 1000;
 const DEFAULT_MAP_CENTER = [118.796877, 32.060255];
 const DEFAULT_MAP_ZOOM = 11;
 const moodMarkerIconCache = new Map();
+let travelRoutePolylines = [];
+let travelRouteMarkers = [];
+let pendingTravelRouteData = null;
+let lastFittedTravelPlanId = null;
 
 function saveMapViewState() {
     if (!map) return;
@@ -151,6 +155,130 @@ function clearPostMarkers() {
     postMarkers = [];
 }
 
+function clearTravelRouteOverlays() {
+    if (!map) return;
+
+    if (travelRoutePolylines.length > 0) {
+        map.remove(travelRoutePolylines);
+        travelRoutePolylines = [];
+    }
+
+    if (travelRouteMarkers.length > 0) {
+        map.remove(travelRouteMarkers);
+        travelRouteMarkers = [];
+    }
+}
+
+function normalizeTravelSpots(dailyPlans) {
+    if (!Array.isArray(dailyPlans)) return [];
+    return dailyPlans
+        .map((spot, index) => ({
+            ...spot,
+            index,
+            lat: Number(spot?.lat),
+            lng: Number(spot?.lng)
+        }))
+        .filter((spot) => Number.isFinite(spot.lat) && Number.isFinite(spot.lng));
+}
+
+function createTravelSpotMarker(spot, currentStepIndex) {
+    const isCurrent = spot.index === currentStepIndex;
+    const borderColor = isCurrent ? '#2B59FF' : '#000';
+    const fillColor = isCurrent ? '#2B59FF' : '#fff';
+    const textColor = isCurrent ? '#fff' : '#000';
+
+    const marker = new AMap.Marker({
+        position: [spot.lng, spot.lat],
+        offset: new AMap.Pixel(-13, -13),
+        zIndex: isCurrent ? 230 : 210,
+        title: spot.location || `第${spot.index + 1}站`,
+        content: `
+            <div style="width:26px;height:26px;border-radius:50%;border:3px solid ${borderColor};background:${fillColor};color:${textColor};font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #000;">
+                ${spot.index + 1}
+            </div>
+        `
+    });
+
+    return marker;
+}
+
+function createTravelSegmentPolyline(fromSpot, toSpot, segmentIndex, currentStepIndex) {
+    const isCompleted = segmentIndex < currentStepIndex;
+    const isActive = segmentIndex === currentStepIndex;
+
+    let color = '#9AA0A6';
+    if (isCompleted) color = '#16A34A';
+    if (isActive) color = '#2B59FF';
+
+    return new AMap.Polyline({
+        path: [
+            [fromSpot.lng, fromSpot.lat],
+            [toSpot.lng, toSpot.lat]
+        ],
+        strokeColor: color,
+        strokeOpacity: 0.95,
+        strokeWeight: isActive ? 7 : 5,
+        strokeStyle: isCompleted || isActive ? 'solid' : 'dashed',
+        showDir: true,
+        lineJoin: 'round',
+        zIndex: isActive ? 220 : 205
+    });
+}
+
+function renderTravelRoute(travelData) {
+    if (!map) {
+        pendingTravelRouteData = travelData || null;
+        return;
+    }
+
+    const status = travelData?.status;
+    const spots = normalizeTravelSpots(travelData?.dailyPlans);
+    if (!travelData || !Array.isArray(travelData.dailyPlans) || spots.length < 1 || !['traveling', 'completed'].includes(status)) {
+        clearTravelRouteOverlays();
+        pendingTravelRouteData = null;
+        return;
+    }
+
+    const currentStepIndex = Number.isFinite(Number(travelData.stepIndex))
+        ? Number(travelData.stepIndex)
+        : 0;
+
+    clearTravelRouteOverlays();
+
+    const markers = spots.map((spot) => createTravelSpotMarker(spot, currentStepIndex));
+    const lines = [];
+
+    for (let i = 0; i < spots.length - 1; i++) {
+        lines.push(createTravelSegmentPolyline(spots[i], spots[i + 1], i, currentStepIndex));
+    }
+
+    if (lines.length > 0) {
+        map.add(lines);
+        travelRoutePolylines = lines;
+    }
+
+    if (markers.length > 0) {
+        map.add(markers);
+        travelRouteMarkers = markers;
+    }
+
+    if (travelData?.planId && lastFittedTravelPlanId !== travelData.planId) {
+        lastFittedTravelPlanId = travelData.planId;
+        map.setFitView([...lines, ...markers], false, [80, 40, 220, 40]);
+    }
+
+    pendingTravelRouteData = null;
+}
+
+function syncTravelRoute(travelData) {
+    renderTravelRoute(travelData);
+}
+
+function clearTravelRoute() {
+    pendingTravelRouteData = null;
+    clearTravelRouteOverlays();
+}
+
 function getSquaredDistance(lngA, latA, lngB, latB) {
     const dx = Number(lngA) - Number(lngB);
     const dy = Number(latA) - Number(latB);
@@ -174,7 +302,7 @@ function sortPostsByDistanceToCenter(posts) {
 function createPostMarker(post) {
     const emoji = getMoodEmoji(post.mood);
     const marker = new AMap.Marker({
-        position: [post.lng, post.lat],
+        position: [Number(post.markerLng ?? post.lng), Number(post.markerLat ?? post.lat)],
         title: post.locationName || '旅途贴文',
         icon: new AMap.Icon({
             size: new AMap.Size(40, 40),
@@ -197,14 +325,39 @@ function isValidMarkerPost(post) {
 
 function normalizeMarkerPosts(posts) {
     if (!Array.isArray(posts)) return [];
+    const groupedCounts = new Map();
+
     return posts
         .filter(isValidMarkerPost)
         .slice(0, MAX_RENDER_MARKERS)
-        .map((post) => ({
-            ...post,
-            lng: Number(post.lng),
-            lat: Number(post.lat)
-        }));
+        .map((post) => {
+            const lng = Number(post.lng);
+            const lat = Number(post.lat);
+            const key = `${lng.toFixed(6)},${lat.toFixed(6)}`;
+            const index = groupedCounts.get(key) || 0;
+            groupedCounts.set(key, index + 1);
+
+            if (index === 0) {
+                return {
+                    ...post,
+                    lng,
+                    lat,
+                    markerLng: lng,
+                    markerLat: lat
+                };
+            }
+
+            const angle = (index * Math.PI) / 3;
+            const radius = 0.002 + (Math.floor(index / 6) * 0.001);
+
+            return {
+                ...post,
+                lng,
+                lat,
+                markerLng: lng + (Math.cos(angle) * radius),
+                markerLat: lat + (Math.sin(angle) * radius)
+            };
+        });
 }
 
 function readPostsCache() {
@@ -370,6 +523,10 @@ function initMapOnce() {
         saveMapViewState();
         scheduleLoadPostMarkers();
     });
+
+    if (pendingTravelRouteData) {
+        renderTravelRoute(pendingTravelRouteData);
+    }
 }
 
 window.addEventListener('pagehide', saveMapViewState);
@@ -400,51 +557,7 @@ if (document.readyState === 'loading') {
     initMapOnce();
 }
 
-// 切换旅行状态的模拟功能
-let isTraveling = false;
-function toggleTravelState() {
-    isTraveling = !isTraveling;
-    document.getElementById('travel-start-ui').style.display = isTraveling ? 'none' : 'block';
-    document.getElementById('travel-ongoing-ui').style.display = isTraveling ? 'block' : 'none';
-    
-    // 如果开始旅行，初始化景点点击监听
-    if (isTraveling) {
-        initTodoItemListeners();
-    }
-}
-
-// 初始化景点项的点击监听
-function initTodoItemListeners() {
-    const todoItems = document.querySelectorAll('.todo-item');
-    todoItems.forEach(item => {
-        item.addEventListener('click', function() {
-            if (!this.classList.contains('completed')) {
-                this.classList.add('completed');
-                this.style.opacity = '1';
-                const icon = this.querySelector('.todo-status-icon');
-                icon.classList.add('done');
-                icon.innerHTML = '<i class="ri-check-line"></i>';
-                
-                // 检查是否所有景点都完成了
-                checkAllCompleted();
-            }
-        });
-    });
-}
-
-// 检查所有景点是否完成
-function checkAllCompleted() {
-    const todoItems = document.querySelectorAll('.todo-item');
-    const completedItems = document.querySelectorAll('.todo-item.completed');
-    
-    if (todoItems.length > 0 && todoItems.length === completedItems.length) {
-        // 所有景点完成，延迟1秒后弹出雷达图
-        setTimeout(() => {
-            if (typeof window.showRadarAnalysis === 'function') {
-                window.showRadarAnalysis();
-            }
-        }, 1000);
-    }
-}
-
-window.toggleTravelState = toggleTravelState;
+window.MapTravelRenderer = {
+    syncTravelRoute,
+    clearTravelRoute
+};

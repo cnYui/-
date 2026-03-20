@@ -75,10 +75,69 @@ function uniqueStrings(items) {
   return result;
 }
 
+function normalizeTextToken(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/[·•，,。.!！?？、\-—_（）()\[\]【】]/g, '');
+}
+
+function isLikelyEmojiOnly(value) {
+  const text = String(value || '').trim();
+  if (!text) return true;
+  const stripped = text
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
+    .replace(/[\s\p{P}\p{S}]/gu, '');
+  return !stripped;
+}
+
+function isGenericLocationName(value, city) {
+  const text = String(value || '').trim();
+  const normalized = normalizeTextToken(text);
+  const normalizedCity = normalizeTextToken(city);
+  if (!normalized) return true;
+  if (isLikelyEmojiOnly(text)) return true;
+  if (normalized.length <= 2) return true;
+  if (normalizedCity && normalized === normalizedCity) return true;
+
+  return [
+    '旅游攻略', 'citywalk', 'city', 'vlog', '拍照', '打卡', '一日游', '两日游', '三日游',
+    '地铁', '海边', '公园', '景区', '商场', '古镇', '路线', '攻略', '合集', '周末', '假期'
+  ].some((keyword) => normalized.includes(normalizeTextToken(keyword)));
+}
+
+function pickFallbackAnchor(post) {
+  const candidates = Array.isArray(post?.dedupedLocations) ? post.dedupedLocations : [];
+  const city = String(post?.city || '').trim();
+  const normalizedCity = normalizeTextToken(city);
+
+  const validCandidates = candidates
+    .map((item) => ({
+      name: String(item?.name || '').trim(),
+      city: String(item?.city || '').trim(),
+      suggestions: Array.isArray(item?.suggestions) ? item.suggestions : [],
+      evidence: Array.isArray(item?.evidence) ? item.evidence : []
+    }))
+    .filter((item) => item.name && !isGenericLocationName(item.name, city));
+
+  const sameCityCandidate = validCandidates.find((item) => {
+    const candidateCity = normalizeTextToken(item.city);
+    return !candidateCity || !normalizedCity || candidateCity === normalizedCity;
+  });
+
+  return sameCityCandidate || validCandidates[0] || null;
+}
+
 function buildPrompt(post) {
   const content = String(post?.content || '').slice(0, 1800);
+  const candidates = Array.isArray(post?.dedupedLocations)
+    ? post.dedupedLocations
+        .map((item, index) => `${index + 1}. ${String(item?.name || '').trim()}（城市=${String(item?.city || '').trim() || '未知'}）`)
+        .filter(Boolean)
+        .slice(0, 20)
+    : [];
 
-  return `你是“地点清洗与地理编码预处理”助手。请根据单帖信息，识别一个最适合高德地理编码的“具体地点名”。\n\n请严格输出 JSON，不要输出 markdown。结构必须是：\n{\n  "resolvedLocationName": "字符串，尽量具体的地点名（店名/景点名/商圈+店名）",\n  "resolvedCity": "字符串，城市名",\n  "confidence": 0.0,\n  "reason": "一句话解释"\n}\n\n规则：\n1) 必须结合 locationName、city、title、content 共同判断。\n2) 优先具体地点，不要只输出城市名。\n3) 若原 locationName 明显过泛（如 海边/某店/公园）但正文可推出更具体地点，应输出更具体名称。\n4) 若无法更具体，保留原 locationName；若原 locationName 为空，可从 title/content 提取一个最可能地点。\n5) resolvedCity 要与地点一致（例如“凌波门”应在武汉，不要硬写南京）。\n\n输入：\n- noteId: ${post?.noteId || ''}\n- sourceNoteId: ${post?.sourceNoteId || ''}\n- city: ${post?.city || ''}\n- locationName: ${post?.locationName || ''}\n- title: ${post?.title || ''}\n- content: ${content}`;
+  return `你是“地点清洗与地理编码预处理”助手。请根据单帖信息，输出一个可用于高德地理编码的精准地点。\n\n请严格输出 JSON，不要输出 markdown。结构必须是：\n{\n  "resolvedLocationName": "精准地点名",\n  "resolvedCity": "城市名",\n  "confidence": 0.0,\n  "reason": "一句话解释"\n}\n\n硬性规则：\n1) 必须结合 locationName、city、title、content、dedupedLocations 共同判断。\n2) resolvedLocationName 必须是“可直接 geocode 的地点锚点”，优先：古镇/景区/公园/商圈/街区/湖/寺/桥/市场/地铁站。\n3) 禁止输出泛词：城市名（如“无锡/杭州/上海”）、情绪词、攻略标题、时间词、句子。\n4) 禁止优先单店；仅当整帖明显围绕一家店/一个场馆时，才输出单店名。\n5) 如果是多地点攻略/合集/路线，优先输出最能代表整帖的区域级锚点地点。\n6) 若候选里同时有区域级地点和单店，优先区域级地点。\n7) resolvedCity 必须与地点一致，严禁跨城（例如“鼋头渚”必须是无锡）。\n8) 若无法确定精准地点，保留原 locationName，但不能退化成仅城市名。\n\n输出示例（仅风格参考）：\n- 正确："鼋头渚"、"惠山古镇"、"清名桥历史文化街区"、"西湖"\n- 错误："无锡"、"杭州"、"无锡旅游攻略"、"极限十小时在无锡我都吃了啥"\n\n输入：\n- noteId: ${post?.noteId || ''}\n- sourceNoteId: ${post?.sourceNoteId || ''}\n- city: ${post?.city || ''}\n- locationName: ${post?.locationName || ''}\n- title: ${post?.title || ''}\n- content: ${content}\n- dedupedLocations:\n${candidates.length ? candidates.join('\n') : '无'}`;
 }
 
 async function callStepfun(payload) {
@@ -136,8 +195,27 @@ function normalizeRefinedLocation(post, parsed) {
   const confidence = Number(parsed?.confidence || 0);
   const reason = String(parsed?.reason || '').trim();
 
-  const finalLocation = resolvedLocationName || oldLocation || oldCity;
-  const finalCity = resolvedCity || oldCity;
+  let finalLocation = resolvedLocationName || oldLocation || oldCity;
+  let finalCity = resolvedCity || oldCity;
+
+  if (isGenericLocationName(finalLocation, finalCity || oldCity)) {
+    const fallbackAnchor = pickFallbackAnchor(post);
+    if (fallbackAnchor) {
+      finalLocation = fallbackAnchor.name;
+      finalCity = fallbackAnchor.city || finalCity || oldCity;
+    }
+  }
+
+  if (isGenericLocationName(finalLocation, finalCity || oldCity)) {
+    const fallbackAnchor = pickFallbackAnchor({
+      ...post,
+      dedupedLocations: rebuildLocationIndex([post]).map((item) => ({ name: item.name, city: item.city }))
+    });
+    if (fallbackAnchor) {
+      finalLocation = fallbackAnchor.name;
+      finalCity = fallbackAnchor.city || finalCity || oldCity;
+    }
+  }
 
   return {
     finalLocation,

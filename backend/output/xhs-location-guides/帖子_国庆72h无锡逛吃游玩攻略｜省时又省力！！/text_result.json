@@ -1,0 +1,122 @@
+{
+  "noteId": "68ce6620000000001003f0a0",
+  "title": "国庆72h无锡逛吃游玩攻略｜省时又省力！！",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "惠山古镇",
+      "city": "无锡",
+      "suggestions": [
+        "Day1行程的第一站"
+      ],
+      "evidence": [
+        "Day1:惠山古镇-惠山映月里-南禅寺-南长街"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "惠山映月里",
+      "city": "无锡",
+      "suggestions": [
+        "Day1行程的第二站"
+      ],
+      "evidence": [
+        "Day1:惠山古镇-惠山映月里-南禅寺-南长街"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "南禅寺",
+      "city": "无锡",
+      "suggestions": [
+        "Day1行程的第三站"
+      ],
+      "evidence": [
+        "Day1:惠山古镇-惠山映月里-南禅寺-南长街"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "南长街",
+      "city": "无锡",
+      "suggestions": [
+        "Day1行程的第四站"
+      ],
+      "evidence": [
+        "Day1:惠山古镇-惠山映月里-南禅寺-南长街"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "灵山胜境",
+      "city": "无锡",
+      "suggestions": [
+        "Day2行程的第一站"
+      ],
+      "evidence": [
+        "Day2:灵山胜境-拈花湾-三阳广场"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "拈花湾",
+      "city": "无锡",
+      "suggestions": [
+        "Day2行程的第二站"
+      ],
+      "evidence": [
+        "Day2:灵山胜境-拈花湾-三阳广场"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "三阳广场",
+      "city": "无锡",
+      "suggestions": [
+        "Day2行程的第三站"
+      ],
+      "evidence": [
+        "Day2:灵山胜境-拈花湾-三阳广场"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "三国水浒城",
+      "city": "无锡",
+      "suggestions": [
+        "Day3行程的第一站"
+      ],
+      "evidence": [
+        "Day3:三国水浒城-蠡湖公园-运河外滩"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "蠡湖公园",
+      "city": "无锡",
+      "suggestions": [
+        "Day3行程的第二站"
+      ],
+      "evidence": [
+        "Day3:三国水浒城-蠡湖公园-运河外滩"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "运河外滩",
+      "city": "无锡",
+      "suggestions": [
+        "Day3行程的第三站"
+      ],
+      "evidence": [
+        "Day3:三国水浒城-蠡湖公园-运河外滩"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "该帖子是无锡72小时国庆游玩攻略，详细列出了三天的景点游览顺序（惠山古镇、灵山胜境、三国水浒城等），并推荐了多家美食餐厅，整体强调省时省力的深度游体验。",
+  "uncertain": [
+    "标签中包含'无锡景区避雷'但正文未提供具体避坑信息"
+  ]
+}

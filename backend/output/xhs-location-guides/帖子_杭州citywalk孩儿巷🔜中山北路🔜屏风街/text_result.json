@@ -1,0 +1,47 @@
+{
+  "noteId": "6711e064000000001402cd60",
+  "title": "杭州citywalk孩儿巷🔜中山北路🔜屏风街",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "孩儿巷",
+      "city": "杭州",
+      "suggestions": [
+        "从地铁1/2号线凤起路站A出口出站即达",
+        "依次逛Pasto COFI COFI、橡皮文具店、慢熟面包店bud bread、咖啡脑袋、Tira misu提拉米苏、Tiohoh贝果三明治店、Parking coffee、Manner Coffee"
+      ],
+      "evidence": [
+        "🚇地铁1/2号线 凤起路站 A出口 出站就是📍孩儿巷",
+        "☕️Pasto COFI COFI 🧸橡皮文具店 🍞慢熟面包店bud bread ☕️咖啡脑袋 🥯Tira misu提拉米苏 🥯Tiohoh 贝果三明治店 ☕️Parking coffee ☕️Manner Coffee"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "中山北路",
+      "city": "杭州",
+      "suggestions": [
+        "从孩儿巷走到底到达中山北路，先右转逛皮师马卡龙，再左转逛红跑车蛋糕世界、无由·Tea zone、阿嬷的糖水铺、村口大树、小狗面馆、AZAHAR安莎烘焙、Really Cool古着店、吉市cafe、冰喜福雪冰·鲜奶·甜品、Black Burger黑汉堡、Cycle Cycle"
+      ],
+      "evidence": [
+        "📍孩儿巷走到底就是📍中山北路 先右转➡️ 🥯皮师👨‍🍳马卡龙 再左转⬅️ 🥯红跑车蛋糕世界 ☕️无由·Tea zone 🍨阿嬷的糖水铺 ☕️村口大树 🍜小狗面馆 🥯AZAHAR安莎烘焙 🧸Really Cool古着店 ☕️吉市cafe 🍨冰喜福雪冰·鲜奶·甜品 🍔Black Burger黑汉堡 🥯Cycle Cycle"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "屏风街",
+      "city": "杭州",
+      "suggestions": [
+        "从中山北路右边过马路即达屏风街，逛fa酵食堂、CHOCMONS巧克怪兽",
+        "逛完后可骑自行车前往银泰in77，沿途经过得意胶片馆、来拍照叭等拍立得照相馆，并有机会偶遇卡皮巴拉快闪"
+      ],
+      "evidence": [
+        "逛完Cycle📍中山北路右边过马路就是📍屏风街 🥯fa酵食堂 🥯CHOCMONS巧克怪兽",
+        "逛完还可以骑🚲去📍银泰in77 意外收获卡皮巴拉快闪 太太太可爱了 沿途会经过可爱的拍立得照相馆 📷得意胶片馆 📷来拍照叭"
+      ],
+      "confidence": 1
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "这是一条杭州经典citywalk路线，从地铁凤起路站A口出发，依次经过孩儿巷、中山北路、屏风街，沿途汇集多家特色咖啡馆、烘焙店、古着店、甜品店及美食餐厅，最终可骑车延伸至银泰in77。路线顺路好逛，适合探索城市里的小众宝藏店铺。",
+  "uncertain": []
+}

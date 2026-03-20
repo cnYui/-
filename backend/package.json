@@ -13,6 +13,9 @@
     "db:extract:xhs:guides": "node src/database/extract-xhs-location-guides.js",
     "db:build:xhs:dataset": "node src/database/build-xhs-guides-dataset.js",
     "db:import:xhs:dataset": "node src/database/import-xhs-guides-dataset.js",
+    "db:import:xhs:slim": "node src/database/import-xhs-slim-csv.js",
+    "db:pipeline:xhs:slim": "node src/database/run-xhs-unified-pipeline.js",
+    "db:pipeline:xhs:unified": "node src/database/run-xhs-unified-pipeline.js",
     "db:refine:xhs:locations": "node src/database/refine-xhs-dataset-locations-stepfun.js",
     "db:refine:xhs:db:locations": "node src/database/refine-xhs-posts-locations-stepfun.js",
     "db:geocode:xhs:amap": "node src/database/geocode-xhs-posts-amap.js"
@@ -24,6 +27,7 @@
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "multer": "^2.1.1",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "sharp": "^0.34.5"
   }
 }

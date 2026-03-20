@@ -1,0 +1,212 @@
+{
+  "noteId": "685948830000000012031513",
+  "title": "：在杭州 淡人48h旅游攻略（附路线时间详细版",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "桔子酒店（西湖湖滨店）",
+      "city": "杭州",
+      "suggestions": [
+        "十一点半到达并入住酒店"
+      ],
+      "evidence": [
+        "十一点半到达入住酒店 📍桔子酒店（西湖湖滨店）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "伍子面馆（浣纱路店）",
+      "city": "杭州",
+      "suggestions": [
+        "10:30从酒店步行至此吃面"
+      ],
+      "evidence": [
+        "10：30 酒店步行至伍子面馆（浣纱路店）吃面"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "平咖啡",
+      "city": "杭州",
+      "suggestions": [
+        "11:00打车去喝咖啡"
+      ],
+      "evidence": [
+        "11：00 打车去平咖啡喝咖啡"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "Homie Canteen",
+      "city": "杭州",
+      "suggestions": [
+        "12:00步行到此吃糕"
+      ],
+      "evidence": [
+        "12：00 步行到Homie Canteen吃糕"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "武林广场公交站",
+      "city": "杭州",
+      "suggestions": [
+        "13:00打车到此，13:17上车318路公交车前往虎跑公园"
+      ],
+      "evidence": [
+        "13：00 打车到武林广场公交站 13：17 上车318路公交车出发虎跑公园"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "虎跑公园",
+      "city": "杭州",
+      "suggestions": [
+        "14:00到达并游玩"
+      ],
+      "evidence": [
+        "14：00到达虎跑公园"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "六和塔",
+      "city": "杭州",
+      "suggestions": [
+        "如果有精力可以继续去游玩"
+      ],
+      "evidence": [
+        "（后面如果有精力还可以继续去六和塔游玩）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "西冷桥",
+      "city": "杭州",
+      "suggestions": [
+        "4:00起床打车至此看蓝调时刻"
+      ],
+      "evidence": [
+        "4：00起床酒店打车去西冷桥看蓝调时刻"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "孤山路",
+      "city": "杭州",
+      "suggestions": [
+        "5:00沿着走到断桥残雪"
+      ],
+      "evidence": [
+        "5：00 沿着孤山路一直走到断桥残雪"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "断桥残雪",
+      "city": "杭州",
+      "suggestions": [
+        "5:30打车去釜山小吃吃煎包"
+      ],
+      "evidence": [
+        "5：30 断桥残雪打车去釜山小吃吃煎包"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "釜山小吃",
+      "city": "杭州",
+      "suggestions": [
+        "吃煎包"
+      ],
+      "evidence": [
+        "断桥残雪打车去釜山小吃吃煎包"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "马家湾码头",
+      "city": "杭州",
+      "suggestions": [
+        "早上可选：如果不累可以直接去等第一班手摇船",
+        "下午：13:30打车至此坐船，15:40返回"
+      ],
+      "evidence": [
+        "（如果不累也可以选择直接去马家湾码头等第一班手摇船）",
+        "13：30打车去马家湾码头坐船 15：40返回码头"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "太子湾公园",
+      "city": "杭州",
+      "suggestions": [
+        "15:40返回码头后步行到此游玩"
+      ],
+      "evidence": [
+        "15：40返回码头后步行到太子湾公园"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "琢咖啡",
+      "city": "杭州",
+      "suggestions": [
+        "16:30打车至此打卡"
+      ],
+      "evidence": [
+        "16：30 打车到琢咖啡 （还可以打卡就近的录咖啡和夏序）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "录咖啡",
+      "city": "杭州",
+      "suggestions": [
+        "就近打卡"
+      ],
+      "evidence": [
+        "（还可以打卡就近的录咖啡和夏序）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "夏序",
+      "city": "杭州",
+      "suggestions": [
+        "就近打卡"
+      ],
+      "evidence": [
+        "（还可以打卡就近的录咖啡和夏序）"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "杭州酒家（延安路店）",
+      "city": "杭州",
+      "suggestions": [
+        "12:00步行至此吃饭"
+      ],
+      "evidence": [
+        "12：00 酒店步行至杭州酒家（延安路店）吃饭"
+      ],
+      "confidence": 1
+    },
+    {
+      "location": "杭州东站",
+      "city": "杭州",
+      "suggestions": [
+        "18:00回酒店取行李出发至此"
+      ],
+      "evidence": [
+        "18：00回酒店取行李出发杭州东站"
+      ],
+      "confidence": 1
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "这篇帖子是杭州48小时旅游攻略，详细规划了三天行程，包括住宿在桔子酒店（西湖湖滨店），以及伍子面馆、平咖啡、Homie Canteen、虎跑公园、西冷桥、断桥残雪、马家湾码头、太子湾公园等地点，提供了具体时间、交通方式和活动建议，如吃面、喝咖啡、游玩景点、坐船等，并标注了可选行程如六和塔和早上手摇船。",
+  "uncertain": [
+    "标题中'淡人'的含义不明确，可能为'淡季'或'达人'的笔误，但未在正文中解释"
+  ]
+}

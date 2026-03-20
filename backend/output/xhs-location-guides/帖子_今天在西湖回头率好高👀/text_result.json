@@ -1,0 +1,32 @@
+{
+  "noteId": "67b21c2a0000000018006f31",
+  "title": "今天在西湖回头率好高👀",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "西湖",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "标题: 今天在西湖回头率好高👀",
+        "标签: 西湖"
+      ],
+      "confidence": 0.2
+    },
+    {
+      "location": "灵隐寺",
+      "city": "",
+      "suggestions": [],
+      "evidence": [
+        "标签: 灵隐寺",
+        "话题: #灵隐寺[话题]#"
+      ],
+      "confidence": 0.2
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子仅提及西湖和灵隐寺两个地点，但未提供任何具体游玩建议或玩法。",
+  "uncertain": [
+    "建议内容完全缺失，无法提取任何玩法信息。"
+  ]
+}

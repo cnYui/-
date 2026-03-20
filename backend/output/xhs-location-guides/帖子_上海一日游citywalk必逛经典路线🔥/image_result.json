@@ -1,0 +1,108 @@
+{
+  "noteId": "67794d8200000000130017d2",
+  "title": "上海一日游citywalk必逛经典路线🔥",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "武康大楼",
+      "city": "上海",
+      "suggestions": [
+        "上午游玩，作为经典路线的起点"
+      ],
+      "evidence": [
+        "上午:武康大楼"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "武康路",
+      "city": "上海",
+      "suggestions": [
+        "上午游玩，从武康大楼继续游览"
+      ],
+      "evidence": [
+        "上午:武康大楼➡️武康路"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "淮海中路",
+      "city": "上海",
+      "suggestions": [
+        "上午游玩，从武康路继续游览"
+      ],
+      "evidence": [
+        "上午:...➡️淮海中路"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "GM",
+      "city": "上海",
+      "suggestions": [
+        "上午游玩，淮海中路之后的站点"
+      ],
+      "evidence": [
+        "上午:...➡️GM"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "location": "静安寺",
+      "city": "上海",
+      "suggestions": [
+        "下午游玩，作为下午行程的起点"
+      ],
+      "evidence": [
+        "下午：静安寺"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "豫园",
+      "city": "上海",
+      "suggestions": [
+        "下午游玩，从静安寺继续游览"
+      ],
+      "evidence": [
+        "下午：静安寺➡️豫园"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "城隍庙",
+      "city": "上海",
+      "suggestions": [
+        "下午游玩，从豫园继续游览"
+      ],
+      "evidence": [
+        "下午：...➡️城隍庙"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "外滩",
+      "city": "上海",
+      "suggestions": [
+        "下午游玩，从城隍庙继续游览，欣赏陆家嘴夜景"
+      ],
+      "evidence": [
+        "下午：...➡️外滩",
+        "#陆家嘴夜景"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [
+    "上海一日游",
+    "vlog",
+    "I ❤ SH",
+    "TOD'S",
+    "Chamian Lou",
+    "SH"
+  ],
+  "summary": "帖子提供了一条上海一日游的经典路线，上午从武康大楼、武康路、淮海中路到GM，下午从静安寺、豫园、城隍庙到外滩，推荐了蟹黄面和萨莉亚作为美食选择。",
+  "uncertain": [
+    "GM的具体地点未明确"
+  ]
+}

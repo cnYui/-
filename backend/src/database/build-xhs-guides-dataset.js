@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const GUIDES_DIR = process.env.XHS_TRAVEL_INTEL_OUTPUT_DIR || path.resolve(__dirname, '../../output/xhs-location-guides');
 const OUTPUT_FILE = process.env.XHS_GUIDES_DATASET_OUTPUT || path.join(GUIDES_DIR, 'xhs_posts_dataset.json');
+const NOTE_IDS_FILE = process.env.XHS_GUIDES_NOTE_IDS_FILE || '';
 const STEPFUN_API_KEY = process.env.STEPFUN_API_KEY;
 const STEPFUN_BASE_URL = process.env.STEPFUN_BASE_URL || 'https://api.stepfun.com/v1';
 const LLM_MODEL = process.env.STEPFUN_TEXT_MODEL || 'step-3.5-flash';
@@ -32,6 +33,26 @@ function safeReadJson(filePath, fallback = null) {
   } catch {
     return fallback;
   }
+}
+
+function loadNoteIdFilter(filePath) {
+  const target = String(filePath || '').trim();
+  if (!target) return null;
+
+  const payload = safeReadJson(target, null);
+  if (!payload) return null;
+
+  const noteIds = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload.noteIds)
+      ? payload.noteIds
+      : [];
+
+  const normalized = noteIds
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+
+  return normalized.length ? new Set(normalized) : null;
 }
 
 function uniqueStrings(items) {
@@ -99,11 +120,19 @@ function toTimestampLike(value) {
 function inferMoodFallback(title, content, summary) {
   const source = `${title || ''}\n${content || ''}\n${summary || ''}`;
 
-  if (/(治愈|舒服|温柔|散步|citywalk|幸福|轻松|宁静)/i.test(source)) return '平静';
-  if (/(攻略|超详细|保姆级|推荐|宝藏|好逛|出片|打卡|必去)/i.test(source)) return '兴奋';
-  if (/(秋天|梧桐|风景|漂亮|氛围|电影感|震撼|绝美)/i.test(source)) return '感动';
-  if (/(红山动物园|景点|旅行|旅游|度假|海边|咖啡|好吃)/i.test(source)) return '开心';
-  if (/(踩雷|避雷|热|人多|排队|累|堵)/i.test(source)) return '焦虑';
+  if (/(崩溃|难过|失落|遗憾|泪目|流泪|伤心|emo|心碎|压抑|低落|😭|😢)/i.test(source)) return '悲伤';
+  if (/(生气|愤怒|气死|无语|火大|炸裂|吐槽|怒|😠|💢)/i.test(source)) return '愤怒';
+  if (/(害怕|恐怖|吓人|惊魂|不敢|后怕|可怕|慎入|鬼|惊悚|😨|😱)/i.test(source)) return '恐惧';
+  if (/(累趴|好累|疲惫|暴走|特种兵|通宵|赶路|熬夜|走断腿|腿废了|累麻了|😫)/i.test(source)) return '疲惫';
+  if (/(无聊|没意思|发呆|空虚|不知道玩啥|随便逛逛|打发时间|😑)/i.test(source)) return '无聊';
+  if (/(踩雷|避雷|热|人多|排队|堵|拥挤|焦虑|紧张|慌|赶不上|来不及|怕踩坑|😰)/i.test(source)) return '焦虑';
+  if (/(治愈|舒服|温柔|散步|citywalk|轻松|宁静|安静|悠闲|松弛|发呆)/i.test(source)) return '平静';
+  if (/(幸福感|幸福|浪漫|甜蜜|满足|圆满|美好一天|被爱|恋爱|纪念日|🥰|❤️)/i.test(source)) return '幸福';
+  if (/(一个人|独自|孤独|独处|落单|一个人的旅行|单人散步|😔)/i.test(source)) return '孤独';
+  if (/(哇|惊艳|震撼|惊喜|惊讶|绝了|绝美|神了|没想到|居然|居然还有|太绝了|😲)/i.test(source)) return '惊讶';
+  if (/(感动|泪目|氛围感|电影感|秋天|梧桐|落日|晚霞|风景|漂亮|值得|封神|浪漫到哭|被治愈|🥺)/i.test(source)) return '感动';
+  if (/(攻略|超详细|保姆级|推荐|宝藏|好逛|出片|打卡|必去|冲|值回票价|玩疯了|好玩|太棒了|🤩)/i.test(source)) return '兴奋';
+  if (/(开心|快乐|可爱|好吃|好拍|喜欢|满足|玩得开心|笑死|萌|哈哈|🥳|😊|红山动物园|景点|旅行|旅游|度假|海边|咖啡)/i.test(source)) return '开心';
 
   return '开心';
 }
@@ -146,7 +175,7 @@ function buildDedupPrompt(post, candidates) {
     `${idx + 1}. 地点=${item.name}；城市=${item.city || '未知'}；建议=${item.suggestions.join(' | ') || '无'}；证据=${item.evidence.join(' | ') || '无'}`
   ));
 
-  return `你是旅行数据清洗助手。请针对单篇帖子做“地点去重 + 主地点识别 + 心情判断”。\n\n请严格输出 JSON，不要输出 markdown，结构必须是：\n{\n  "dedupedLocations": [\n    {\n      "name": "地点名称",\n      "city": "城市名，没有就空字符串",\n      "suggestions": ["建议1"],\n      "evidence": ["证据片段1"]\n    }\n  ],\n  "primaryLocation": "该帖最适合作为发帖地理位置的地点名",\n  "primaryCity": "主地点城市名，没有就空字符串",\n  "mood": "开心|兴奋|平静|感动|惊讶|悲伤|愤怒|焦虑|疲惫|无聊|恐惧|幸福|孤独",\n  "reason": "简短理由"\n}\n\n要求：\n1) 按地点名称去重，保留建议和证据。\n2) 若候选包含多个地点，优先选攻略核心地点或最能代表整帖的地点作为 primaryLocation。\n3) mood 必须是给定枚举之一。\n\n帖子信息：\n- note_id: ${post.noteId}\n- title: ${post.title || ''}\n- content: ${(post.content || '').slice(0, 1600)}\n- city: ${post.city || ''}\n- created_at: ${post.createdAt || ''}\n\n候选地点：\n${lines.length ? lines.join('\n') : '无（请根据标题和正文自行判断一个主地点）'}`;
+  return `你是旅行数据清洗助手。请针对单篇帖子做“地点去重 + 主地点识别 + 心情判断”。\n\n请严格输出 JSON，不要输出 markdown，结构必须是：\n{\n  "dedupedLocations": [\n    {\n      "name": "地点名称",\n      "city": "城市名，没有就空字符串",\n      "suggestions": ["建议1"],\n      "evidence": ["证据片段1"]\n    }\n  ],\n  "primaryLocation": "该帖最适合作为发帖地理位置的地点名",\n  "primaryCity": "主地点城市名，没有就空字符串",\n  "mood": "开心|兴奋|平静|感动|惊讶|悲伤|愤怒|焦虑|疲惫|无聊|恐惧|幸福|孤独",\n  "reason": "简短理由"\n}\n\n要求：\n1) 按地点名称去重，保留建议和证据。\n2) primaryLocation 必须是可 geocode 的具体地点锚点，优先：古镇/景区/公园/商圈/街区/湖/寺/桥/市场/地铁站。\n3) 禁止把 primaryLocation 输出成城市名或标题泛词（如“无锡”“杭州”“上海”“无锡旅游攻略”）。\n4) 若候选包含多个地点，优先选最能代表整帖的区域级锚点地点，不要优先单店。\n5) 仅当整帖明显围绕一家店/一个场馆时，才可输出单店名。\n6) primaryCity 必须与 primaryLocation 同城，禁止跨城。\n7) mood 必须是给定枚举之一。\n\n帖子信息：\n- note_id: ${post.noteId}\n- title: ${post.title || ''}\n- content: ${(post.content || '').slice(0, 1600)}\n- city: ${post.city || ''}\n- created_at: ${post.createdAt || ''}\n\n候选地点：\n${lines.length ? lines.join('\n') : '无（请根据标题和正文自行判断一个主地点）'}`;
 }
 
 async function callStepfun(payload) {
@@ -385,11 +414,23 @@ async function run() {
   }
 
   const pool = getPgPool();
+  const noteIdFilter = loadNoteIdFilter(NOTE_IDS_FILE);
 
   try {
-    const entries = fs.readdirSync(GUIDES_DIR, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .slice(0, LIMIT);
+    let entries = fs.readdirSync(GUIDES_DIR, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory());
+
+    if (noteIdFilter) {
+      entries = entries.filter((entry) => {
+        const folderPath = path.join(GUIDES_DIR, entry.name);
+        const textResult = safeReadJson(path.join(folderPath, 'text_result.json'), {});
+        const imageResult = safeReadJson(path.join(folderPath, 'image_result.json'), {});
+        const noteId = String(textResult?.noteId || imageResult?.noteId || '').trim();
+        return noteIdFilter.has(noteId);
+      });
+    }
+
+    entries = entries.slice(0, LIMIT);
 
     const posts = [];
 

@@ -163,6 +163,31 @@ const statements = [
     created_at TIMESTAMPTZ DEFAULT NOW()
   )`,
 
+  `CREATE TABLE IF NOT EXISTS saved_post_records (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    source_mode TEXT DEFAULT 'text',
+    original_image_url TEXT,
+    generated_image_url TEXT,
+    movie_name TEXT,
+    style_analysis JSONB,
+    generation_prompt TEXT,
+    mood TEXT,
+    city TEXT NOT NULL,
+    district TEXT,
+    location_name TEXT,
+    lat DOUBLE PRECISION NOT NULL,
+    lng DOUBLE PRECISION NOT NULL,
+    visit_time TIMESTAMPTZ NOT NULL,
+    generation_status TEXT DEFAULT 'pending',
+    generation_error TEXT,
+    published_post_id BIGINT REFERENCES posts(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  )`,
+
   `ALTER TABLE posts ADD COLUMN IF NOT EXISTS category TEXT`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS footprint_count INTEGER DEFAULT 0`,
 
@@ -181,7 +206,9 @@ const statements = [
   `CREATE INDEX IF NOT EXISTS idx_chatrooms_last_active ON chatrooms(last_active_at)`,
   `CREATE INDEX IF NOT EXISTS idx_chatroom_members_chatroom ON chatroom_members(chatroom_id)`,
   `CREATE INDEX IF NOT EXISTS idx_chatroom_messages_chatroom ON chatroom_messages(chatroom_id)`,
-  `CREATE INDEX IF NOT EXISTS idx_chatroom_messages_created ON chatroom_messages(created_at)`
+  `CREATE INDEX IF NOT EXISTS idx_chatroom_messages_created ON chatroom_messages(created_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_saved_post_records_user_id ON saved_post_records(user_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_saved_post_records_created_at ON saved_post_records(created_at)`
 ];
 
 async function runMigrations() {

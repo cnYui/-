@@ -1,0 +1,39 @@
+{
+  "noteId": "68b5227a000000001d02f617",
+  "title": "📍杭州一日游攻略|避开人流不走回头路！",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "灵隐寺",
+      "city": "杭州",
+      "suggestions": [
+        "上午逛寺庙"
+      ],
+      "evidence": [
+        "上午逛寺庙",
+        "寺 隱靈"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "西湖",
+      "city": "杭州",
+      "suggestions": [
+        "下午游西湖"
+      ],
+      "evidence": [
+        "下午游西湖"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [
+    "杭州一日游",
+    "上午逛寺庙",
+    "寺 隱靈",
+    "下午游西湖",
+    "「保姆级攻略」"
+  ],
+  "summary": "杭州一日游建议上午游览灵隐寺，下午游览西湖，提供简单直接的游玩建议。",
+  "uncertain": []
+}

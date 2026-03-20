@@ -1,0 +1,302 @@
+{
+  "noteId": "66ec2e290000000027003e04",
+  "title": "无锡旅行，一个人可以做什么（免费版）",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "惠山古镇",
+      "city": "无锡",
+      "suggestions": [
+        "看江南的古树和园林"
+      ],
+      "evidence": [
+        "逛惠山古镇 看江南的古树和园林"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "南长街",
+      "city": "无锡",
+      "suggestions": [
+        "拍运河和古桥美景"
+      ],
+      "evidence": [
+        "去南长街 拍运河和古桥美景"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "钱钟书故居",
+      "city": "无锡",
+      "suggestions": [
+        "感受书香氛围"
+      ],
+      "evidence": [
+        "去钱钟书故居感受书香氛围"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "徐霞客故居",
+      "city": "无锡",
+      "suggestions": [
+        "了解旅行家的生活"
+      ],
+      "evidence": [
+        "去徐霞客故居 了解旅行家的生活"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "惠山",
+      "city": "无锡",
+      "suggestions": [
+        "俯瞰太湖和绝美日落"
+      ],
+      "evidence": [
+        "爬惠山俯瞰太湖和绝美日落"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "荣巷老街",
+      "city": "无锡",
+      "suggestions": [
+        "打卡故居和大公图书馆"
+      ],
+      "evidence": [
+        "去荣巷老街 打卡故居和大公图书馆"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "运河公园",
+      "city": "无锡",
+      "suggestions": [
+        "走走",
+        "免费的展览馆"
+      ],
+      "evidence": [
+        "去运河公园走走 免费的展览馆"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "太湖天主堂",
+      "city": "无锡",
+      "suggestions": [
+        "露营/野餐",
+        "假装在国外"
+      ],
+      "evidence": [
+        "去太湖天主堂露营/野餐 假装在国外"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "贡湖湾水韵广场",
+      "city": "无锡",
+      "suggestions": [
+        "看海即视感"
+      ],
+      "evidence": [
+        "去贡湖湾水韵广场 看海即视感"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "无锡博物院",
+      "city": "无锡",
+      "suggestions": [
+        "了解无锡的前世今生"
+      ],
+      "evidence": [
+        "去无锡博物院 了解无锡的前世今生"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "崧美术馆",
+      "city": "无锡",
+      "suggestions": [
+        "拍照",
+        "拿捏文艺腔调"
+      ],
+      "evidence": [
+        "去崧美术馆拍照 拿捏文艺腔调"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "运河汇",
+      "city": "无锡",
+      "suggestions": [
+        "看建筑大师隈研吾的作品"
+      ],
+      "evidence": [
+        "去运河汇看建筑大师隈研吾的作品"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "大窑路",
+      "city": "无锡",
+      "suggestions": [
+        "看历史遗迹和古街道"
+      ],
+      "evidence": [
+        "去大窑路 看历史遗迹和古街道"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "蠡湖公园",
+      "city": "无锡",
+      "suggestions": [
+        "打卡落日摩天轮🎡合影",
+        "冬红嘴鸥"
+      ],
+      "evidence": [
+        "去蠡湖公园 打卡落日摩天轮🎡合影（冬红嘴鸥）"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "茑屋书店",
+      "city": "无锡",
+      "suggestions": [
+        "看书闲坐"
+      ],
+      "evidence": [
+        "去茑屋书店/县图书馆旧址 看书闲坐"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "县图书馆旧址",
+      "city": "无锡",
+      "suggestions": [
+        "看书闲坐"
+      ],
+      "evidence": [
+        "去茑屋书店/县图书馆旧址 看书闲坐"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "蠡堤",
+      "city": "无锡",
+      "suggestions": [
+        "走走",
+        "看看湖光山色"
+      ],
+      "evidence": [
+        "去蠡堤走走 看看湖光山色"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "金匮公园",
+      "city": "无锡",
+      "suggestions": [
+        "赏樱🌸拍照打卡"
+      ],
+      "evidence": [
+        "去金匮公园/独月路 赏樱🌸拍照打卡"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "独月路",
+      "city": "无锡",
+      "suggestions": [
+        "赏樱🌸拍照打卡"
+      ],
+      "evidence": [
+        "去金匮公园/独月路 赏樱🌸拍照打卡"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "半两书店",
+      "city": "无锡",
+      "suggestions": [
+        "逛逛",
+        "chill打卡"
+      ],
+      "evidence": [
+        "去半两书店逛逛 chill打卡"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "蠡岸空间",
+      "city": "无锡",
+      "suggestions": [
+        "湖边吸氧"
+      ],
+      "evidence": [
+        "去蠡岸空间 湖边吸氧"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "蠡湖之光",
+      "city": "无锡",
+      "suggestions": [
+        "看霞光落日"
+      ],
+      "evidence": [
+        "去蠡湖之光/渤公岛看霞光落日"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "渤公岛",
+      "city": "无锡",
+      "suggestions": [
+        "看霞光落日"
+      ],
+      "evidence": [
+        "去蠡湖之光/渤公岛看霞光落日"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "红船场",
+      "city": "无锡",
+      "suggestions": [
+        "感受无锡烟火啊气"
+      ],
+      "evidence": [
+        "去红船场/盛岸市场/稻香市场 感受无锡烟火啊气"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "盛岸市场",
+      "city": "无锡",
+      "suggestions": [
+        "感受无锡烟火啊气"
+      ],
+      "evidence": [
+        "去红船场/盛岸市场/稻香市场 感受无锡烟火啊气"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "稻香市场",
+      "city": "无锡",
+      "suggestions": [
+        "感受无锡烟火啊气"
+      ],
+      "evidence": [
+        "去红船场/盛岸市场/稻香市场 感受无锡烟火啊气"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "该帖子推荐了无锡市内多个免费或地铁可达的旅行地点，涵盖古镇、故居、公园、美术馆等，并提供了具体的游玩建议，如拍照、看日落、感受文化等，适合独自旅行。",
+  "uncertain": []
+}

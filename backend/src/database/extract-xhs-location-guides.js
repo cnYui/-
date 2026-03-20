@@ -21,6 +21,7 @@ const IMAGE_CONCURRENCY = Math.max(1, Math.min(2, Number(process.env.XHS_TRAVEL_
 const API_CONCURRENCY = Math.max(1, Number(process.env.STEPFUN_API_CONCURRENCY || 1));
 const EFFECTIVE_IMAGE_CONCURRENCY = Math.min(IMAGE_CONCURRENCY, API_CONCURRENCY);
 const REQUEST_TIMEOUT = Math.max(60000, Number(process.env.XHS_TRAVEL_INTEL_TIMEOUT_MS || 180000));
+const SKIP_EXISTING = String(process.env.XHS_TRAVEL_INTEL_SKIP_EXISTING || 'true').toLowerCase() !== 'false';
 
 let activeApiRequests = 0;
 const apiWaitQueue = [];
@@ -117,6 +118,38 @@ function ensureUniqueFolderName(baseName, usedNames) {
   const finalName = `${baseName}_${index}`;
   usedNames.add(finalName);
   return finalName;
+}
+
+function safeReadJsonFile(filePath, fallback = null) {
+  if (!fs.existsSync(filePath)) return fallback;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function loadExistingExtractionIndex(rootDir) {
+  const usedNames = new Set();
+  const noteIdToFolder = new Map();
+
+  if (!fs.existsSync(rootDir)) {
+    return { usedNames, noteIdToFolder };
+  }
+
+  const entries = fs.readdirSync(rootDir, { withFileTypes: true }).filter((entry) => entry.isDirectory());
+  for (const entry of entries) {
+    usedNames.add(entry.name);
+    const folderPath = path.join(rootDir, entry.name);
+    const textResult = safeReadJsonFile(path.join(folderPath, 'text_result.json'), {});
+    const imageResult = safeReadJsonFile(path.join(folderPath, 'image_result.json'), {});
+    const noteId = String(textResult?.noteId || imageResult?.noteId || '').trim();
+    if (noteId) {
+      noteIdToFolder.set(noteId, entry.name);
+    }
+  }
+
+  return { usedNames, noteIdToFolder };
 }
 
 function uniqueStrings(items) {
@@ -430,11 +463,19 @@ async function run() {
   }
 
   fs.mkdirSync(OUTPUT_ROOT, { recursive: true });
-  const usedNames = new Set();
+  const { usedNames, noteIdToFolder } = loadExistingExtractionIndex(OUTPUT_ROOT);
+  let skippedExisting = 0;
 
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index];
+    const noteId = String(row.note_id || '').trim();
     const imagePaths = parseImageFiles(row);
+    if (SKIP_EXISTING && noteId && noteIdToFolder.has(noteId)) {
+      skippedExisting += 1;
+      console.log(`⏭️ [${index + 1}/${rows.length}] 跳过已输出 note_id=${noteId} -> ${noteIdToFolder.get(noteId)}`);
+      continue;
+    }
+
     const folderName = ensureUniqueFolderName(`帖子_${sanitizeName(row.title || row.note_id)}`, usedNames);
     const folderPath = path.join(OUTPUT_ROOT, folderName);
 
@@ -469,10 +510,14 @@ async function run() {
     fs.writeFileSync(path.join(folderPath, 'image_result.json'), JSON.stringify(imageResult, null, 2), 'utf8');
 
     console.log(`✅ 已输出: ${folderPath}`);
+    if (noteId) {
+      noteIdToFolder.set(noteId, folderName);
+    }
     await sleep(300);
   }
 
   console.log(`📁 输出目录: ${OUTPUT_ROOT}`);
+  console.log(`⏭️ 已跳过既有输出: ${skippedExisting}`);
 }
 
 run().catch((error) => {

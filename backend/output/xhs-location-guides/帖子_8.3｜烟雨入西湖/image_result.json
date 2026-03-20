@@ -1,0 +1,27 @@
+{
+  "noteId": "688f53ef0000000023038fba",
+  "title": "8.3｜烟雨入西湖",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "西湖",
+      "city": "杭州市",
+      "suggestions": [
+        "在雨天感受西湖的氛围感",
+        "找一个安静的长椅听雨",
+        "欣赏烟雨蒙蒙的湖景"
+      ],
+      "evidence": [
+        "西湖的雨，总是带着一种淡淡的忧伤。",
+        "#听雨",
+        "#雨西湖的氛围感"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [
+    "DJI OSMO ACTION 4"
+  ],
+  "summary": "帖子主要描述了在西湖雨天的氛围感，建议在雨天去西湖，找一个安静的地方听雨，感受烟雨入西湖的美景。",
+  "uncertain": []
+}

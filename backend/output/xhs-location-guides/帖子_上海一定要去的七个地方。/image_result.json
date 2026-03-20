@@ -1,0 +1,27 @@
+{
+  "noteId": "66ea9c75000000002700703a",
+  "title": "上海一定要去的七个地方。",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "上海外滩",
+      "city": "上海",
+      "suggestions": [
+        "欣赏夜景，参观历史建筑"
+      ],
+      "evidence": [
+        "图中显示上海外滩的夜景，有钟楼和历史建筑"
+      ],
+      "confidence": 0.8
+    }
+  ],
+  "ocrTexts": [
+    "上海一定要去的",
+    "七个地方",
+    "Travel around China"
+  ],
+  "summary": "帖子标题为《上海一定要去的七个地方》，图片展示了上海外滩的夜景，建议游客欣赏夜景和参观历史建筑。",
+  "uncertain": [
+    "具体七个地方未在图片中列出，仅从标题推测"
+  ]
+}

@@ -47,6 +47,27 @@ function getAssistantText(data) {
   return String(data?.choices?.[0]?.message?.content || '').trim();
 }
 
+function normalizeTextToken(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/[·•，,。.!！?？、\-—_（）()\[\]【】]/g, '');
+}
+
+function isGenericLocationName(value, city) {
+  const text = String(value || '').trim();
+  const normalized = normalizeTextToken(text);
+  const normalizedCity = normalizeTextToken(city);
+  if (!normalized) return true;
+  if (normalized.length <= 2) return true;
+  if (normalizedCity && normalized === normalizedCity) return true;
+
+  return [
+    '旅游攻略', 'citywalk', 'city', 'vlog', '拍照', '打卡', '一日游', '两日游', '三日游',
+    '地铁', '海边', '公园', '景区', '商场', '古镇', '路线', '攻略', '合集', '周末', '假期'
+  ].some((keyword) => normalized.includes(normalizeTextToken(keyword)));
+}
+
 function buildPrompt(post) {
   const content = String(post?.content || '').slice(0, 1800);
 
@@ -54,21 +75,24 @@ function buildPrompt(post) {
 
 请严格输出 JSON，不要输出 markdown。结构必须是：
 {
-  "resolvedLocationName": "字符串，尽量具体的地点名（店名/景点名/商圈+店名）",
+  "resolvedLocationName": "字符串，尽量具体的地点名（景点/街区/公园/古镇/商圈/市场/地铁站/馆名）",
   "resolvedCity": "字符串，城市名",
   "confidence": 0.0,
   "reason": "一句话解释"
 }
 
-规则：
+硬性规则：
 1) 必须结合 city、title、content 共同判断。
-2) 优先具体地点，不要只输出城市名。
-3) 若无法确认具体地点，输出空字符串给 resolvedLocationName。
-4) 若文本明确指向异地，应修正 resolvedCity（如凌波门->武汉）。
+2) 优先输出可 geocode 的区域级锚点地点：景区/古镇/街区/商圈/湖/寺/桥/市场/地铁站/博物馆。
+3) 禁止输出城市名本身（如“无锡/杭州/上海/北京”）、攻略标题、句子、情绪词。
+4) 若是多地点攻略/合集，优先选择最能代表整帖的一处区域级锚点，不要优先单店。
+5) 若确实无法判断到可 geocode 的具体地点，输出空字符串给 resolvedLocationName，不要硬填城市名。
+6) 若文本明确指向异地，应修正 resolvedCity（如凌波门->武汉）。
 
 输入：
 - id: ${post?.id || ''}
 - sourceNoteId: ${post?.source_note_id || ''}
+- currentLocationName: ${post?.location_name || ''}
 - city: ${post?.city || ''}
 - title: ${post?.title || ''}
 - content: ${content}`;
@@ -126,11 +150,15 @@ async function run() {
 
   try {
     const rows = await client.query(
-      `SELECT id, source_note_id, city, title, content
+      `SELECT id, source_note_id, city, location_name, title, content
        FROM posts
        WHERE source_platform = 'xiaohongshu'
-         AND (geo_confidence IS NULL OR geo_confidence <> 'amap_geocode')
-         AND (location_name IS NULL OR location_name = '')
+         AND (
+           location_name IS NULL
+           OR location_name = ''
+           OR lower(regexp_replace(location_name, '\\s+', '', 'g')) = lower(regexp_replace(city, '\\s+', '', 'g'))
+           OR char_length(regexp_replace(location_name, '\\s+', '', 'g')) <= 2
+         )
        ORDER BY created_at DESC
        LIMIT $1`,
       [REFINE_LIMIT]
@@ -165,7 +193,7 @@ async function run() {
         const locationName = String(parsed?.resolvedLocationName || '').trim();
         const resolvedCity = String(parsed?.resolvedCity || '').trim();
 
-        if (!locationName) {
+        if (!locationName || isGenericLocationName(locationName, resolvedCity || post.city)) {
           skipped += 1;
           await sleep(REQUEST_INTERVAL_MS);
           continue;

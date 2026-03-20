@@ -1,0 +1,102 @@
+{
+  "noteId": "67794d8200000000130017d2",
+  "title": "上海一日游citywalk必逛经典路线🔥",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "武康大楼",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，上午第一站"
+      ],
+      "evidence": [
+        "上午:武康大楼➡️武康路➡️淮海中路➡️GM"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "武康路",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，上午第二站"
+      ],
+      "evidence": [
+        "上午:武康大楼➡️武康路➡️淮海中路➡️GM"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "淮海中路",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，上午第三站"
+      ],
+      "evidence": [
+        "上午:武康大楼➡️武康路➡️淮海中路➡️GM"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "GM",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，上午最后一站"
+      ],
+      "evidence": [
+        "上午:武康大楼➡️武康路➡️淮海中路➡️GM"
+      ],
+      "confidence": 0.6
+    },
+    {
+      "location": "静安寺",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，下午第一站"
+      ],
+      "evidence": [
+        "下午：静安寺➡️豫园➡️城隍庙➡️外滩"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "豫园",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，下午第二站"
+      ],
+      "evidence": [
+        "下午：静安寺➡️豫园➡️城隍庙➡️外滩"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "城隍庙",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，下午第三站"
+      ],
+      "evidence": [
+        "下午：静安寺➡️豫园➡️城隍庙➡️外滩"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "外滩",
+      "city": "上海",
+      "suggestions": [
+        "按路线顺序，下午最后一站"
+      ],
+      "evidence": [
+        "下午：静安寺➡️豫园➡️城隍庙➡️外滩"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子推荐了上海一日游经典citywalk路线，上午依次游览武康大楼、武康路、淮海中路、GM，下午依次游览静安寺、豫园、城隍庙、外滩，并提供了蟹珍香和萨莉亚两家美食推荐。",
+  "uncertain": [
+    "GM具体指代不明，可能为品牌或地点缩写",
+    "美食推荐未明确对应具体游览地点",
+    "标签中提及的陆家嘴夜景未在正文路线中出现"
+  ]
+}

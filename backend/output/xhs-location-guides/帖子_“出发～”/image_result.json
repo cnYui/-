@@ -1,0 +1,23 @@
+{
+  "noteId": "686e43e3000000002201c610",
+  "title": "“出发～”",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "无锡",
+      "city": "无锡",
+      "suggestions": [
+        "打卡"
+      ],
+      "evidence": [
+        "来无锡咯 打卡打卡"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "ocrTexts": [
+    "田栩宁_ 博主 为啥尼"
+  ],
+  "summary": "帖子提到作者来到无锡进行打卡活动，图片中展示了一个具有白色拱门结构的公园或景区，适合拍照打卡。",
+  "uncertain": []
+}

@@ -1,0 +1,32 @@
+{
+  "noteId": "67ff5e58000000001d008fd3",
+  "title": "西湖的这个机位和dazz简直绝配🥰",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "西湖",
+      "city": "杭州市",
+      "suggestions": [
+        "在西湖拍摄情侣照片，使用胶片风格的滤镜，例如Dazz里面的D Fun S，能增加照片的故事感和氛围感。",
+        "推荐的拍摄位置是星巴克杭州孤山店门口，该机位与Dazz滤镜绝配，适合情侣拍照。",
+        "利用湖边的树枝和湖水作为背景，可以拍出有氛围感的照片。"
+      ],
+      "evidence": [
+        "滤镜是dazz里面的D Fun S",
+        "位置在星巴克杭州孤山店门口",
+        "西湖",
+        "西湖机位",
+        "情侣拍照",
+        "氛围感",
+        "西湖拍照"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "ocrTexts": [
+    "HELLO KITTY BABY MILO",
+    "SANRIO BABY MILO STORE"
+  ],
+  "summary": "帖子主要推荐在杭州西湖的星巴克杭州孤山店门口拍摄情侣照片，使用Dazz滤镜中的D Fun S能提升照片的氛围感和故事感，背景可以利用湖边的自然景观如树枝和湖水。",
+  "uncertain": []
+}

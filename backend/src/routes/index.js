@@ -9,6 +9,7 @@ import postsRouter from './posts.js'
 import mailsRouter from './mails.js'
 import chatroomsRouter from './chatrooms.js'
 import uploadRouter from './upload.js'
+import savedPostRecordsRouter from './saved-post-records.js'
 
 const router = Router()
 
@@ -46,5 +47,7 @@ router.use('/chatrooms', chatroomsRouter)
 
 // 上传路由
 router.use('/upload', uploadRouter)
+
+router.use('/saved-post-records', savedPostRecordsRouter)
 
 export default router

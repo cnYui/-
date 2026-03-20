@@ -1,0 +1,31 @@
+{
+  "noteId": "6690fa3e0000000025001db5",
+  "title": "二次元旅行大作战｜魔都黄浦区",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "外文书店",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "外文书店"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "location": "jumpshop",
+      "city": "上海",
+      "suggestions": [],
+      "evidence": [
+        "jumpshop"
+      ],
+      "confidence": 0.5
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子标题提及上海黄浦区二次元旅行，标签列举了多个动漫作品及'外文书店'、'jumpshop'等地点关键词，但正文内容缺失，未提供具体游玩建议、顺序或避坑信息。",
+  "uncertain": [
+    "jumpshop在上海的实际存在性、具体位置及是否指代Jump Shop等实体店",
+    "标签中其他动漫名（如ANIPLEX等）是否对应可参观的实体地点或活动"
+  ]
+}

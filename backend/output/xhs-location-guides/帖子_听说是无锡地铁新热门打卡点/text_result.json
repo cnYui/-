@@ -1,0 +1,24 @@
+{
+  "noteId": "66bc133300000000250330f0",
+  "title": "听说是无锡地铁新热门打卡点",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "无锡地铁",
+      "city": "无锡",
+      "suggestions": [
+        "打卡"
+      ],
+      "evidence": [
+        "标题：听说是无锡地铁新热门打卡点",
+        "正文：凑个热闹，打个卡"
+      ],
+      "confidence": 0.5
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子提及无锡地铁成为新的热门打卡点，建议前往打卡。",
+  "uncertain": [
+    "具体是哪个地铁站或区域未明确说明"
+  ]
+}

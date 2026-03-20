@@ -1,0 +1,25 @@
+{
+  "noteId": "6687445900000000050074e7",
+  "title": "这谁能信是在无锡啊！",
+  "mode": "text",
+  "locationGuides": [
+    {
+      "location": "车coffee",
+      "city": "无锡",
+      "suggestions": [
+        "在靠湖咖啡馆的室外区域享受湖风和美景"
+      ],
+      "evidence": [
+        "📍车coffee",
+        "找了家靠湖的咖啡馆，室外，吹着湖风享受着",
+        "太湖边的景色美到爆"
+      ],
+      "confidence": 0.8
+    }
+  ],
+  "ocrTexts": [],
+  "summary": "帖子推荐在无锡太湖边体验美景，并具体建议在靠湖咖啡馆（如车coffee）的室外区域吹湖风享受，景色优美如青岛。",
+  "uncertain": [
+    "车coffee 的具体名称和位置准确性"
+  ]
+}

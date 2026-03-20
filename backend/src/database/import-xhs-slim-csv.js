@@ -1,0 +1,358 @@
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { getPgPool, closePgPool } from './pg-client.js';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const CSV_PATH = process.env.XHS_SLIM_CSV_PATH
+  || path.resolve(__dirname, '../../../../MediaCrawler/data/xhs/jsonl/search_contents_multicity_balanced_200_2026-03-19_slim.csv');
+const XHS_IMAGES_ROOT = process.env.XHS_IMAGES_ROOT
+  || path.resolve(__dirname, '../../../../MediaCrawler/data/xhs/images');
+const RESET_BEFORE_IMPORT = String(process.env.XHS_RESET_BEFORE_IMPORT || 'false').toLowerCase() === 'true';
+
+const CITY_CENTER = {
+  南京: { lat: 32.060255, lng: 118.796877 },
+  杭州: { lat: 30.274085, lng: 120.15507 },
+  上海: { lat: 31.230416, lng: 121.473701 },
+  北京: { lat: 39.9042, lng: 116.4074 }
+};
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        field += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (ch === ',' && !inQuotes) {
+      row.push(field);
+      field = '';
+      continue;
+    }
+
+    if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i += 1;
+      row.push(field);
+      field = '';
+      if (row.length > 1 || row[0] !== '') rows.push(row);
+      row = [];
+      continue;
+    }
+
+    field += ch;
+  }
+
+  if (field.length || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  if (!rows.length) return [];
+  const headers = rows[0].map((h) => h.trim());
+
+  return rows.slice(1).map((r) => {
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h] = (r[idx] || '').trim();
+    });
+    return obj;
+  }).filter((r) => r.title || r.content || r.image_folder);
+}
+
+function normalizeText(v) {
+  return String(v || '').replace(/\r\n/g, '\n').trim();
+}
+
+function normalizeTags(tags) {
+  return String(tags || '')
+    .split(/[|,]/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .join(',');
+}
+
+function inferCity(row) {
+  const merged = `${row.title || ''} ${row.content || ''} ${row.tags || ''}`;
+  if (/南京/.test(merged)) return '南京';
+  if (/杭州/.test(merged)) return '杭州';
+  if (/上海/.test(merged)) return '上海';
+  if (/北京/.test(merged)) return '北京';
+  return '南京';
+}
+
+function inferMood(row) {
+  const source = `${row.title || ''} ${row.tags || ''} ${row.content || ''}`;
+  if (/(崩溃|难过|失落|遗憾|泪目|流泪|伤心|emo|心碎|压抑|低落|😭|😢)/i.test(source)) return '悲伤';
+  if (/(生气|愤怒|气死|无语|火大|炸裂|吐槽|怒|😠|💢)/i.test(source)) return '愤怒';
+  if (/(害怕|恐怖|吓人|惊魂|不敢|后怕|可怕|慎入|鬼|惊悚|😨|😱)/i.test(source)) return '恐惧';
+  if (/(累趴|好累|疲惫|暴走|特种兵|通宵|赶路|熬夜|走断腿|腿废了|累麻了|😫)/i.test(source)) return '疲惫';
+  if (/(无聊|没意思|发呆|空虚|不知道玩啥|随便逛逛|打发时间|😑)/i.test(source)) return '无聊';
+  if (/(踩雷|避雷|人多|排队|堵车|拥挤|焦虑|紧张|慌|赶不上|来不及|怕踩坑|😰)/i.test(source)) return '焦虑';
+  if (/(治愈|舒服|温柔|散步|walk|citywalk|轻松|宁静|安静|悠闲|松弛|发呆)/i.test(source)) return '平静';
+  if (/(幸福感|幸福|浪漫|甜蜜|满足|圆满|美好一天|被爱|恋爱|纪念日|🥰|❤️)/i.test(source)) return '幸福';
+  if (/(一个人|独自|孤独|独处|落单|一个人的旅行|单人散步|😔)/i.test(source)) return '孤独';
+  if (/(哇|惊艳|震撼|惊喜|惊讶|绝了|绝美|神了|没想到|居然|居然还有|太绝了|😲)/i.test(source)) return '惊讶';
+  if (/(感动|泪目|氛围感|电影感|落日|晚霞|风景|漂亮|值得|封神|浪漫到哭|被治愈|🥺)/i.test(source)) return '感动';
+  if (/(攻略|超详细|保姆级|推荐|宝藏|好逛|出片|打卡|冲|必去|值回票价|玩疯了|好玩|太棒了|🤩)/i.test(source)) return '兴奋';
+  if (/(开心|快乐|可爱|好吃|好拍|喜欢|满足|玩得开心|笑死|萌|哈哈|🥳|😊)/i.test(source)) return '开心';
+  return '开心';
+}
+
+function inferCategory(row) {
+  const source = `${row.title || ''} ${row.tags || ''} ${row.content || ''}`;
+  if (/(美食|咖啡|奶茶|餐厅|火锅|小吃|甜品|早午餐|吃|饭)/i.test(source)) return '吃';
+  if (/(citywalk|街区|拍照|出片|文创|书店|展览|夜市|逛)/i.test(source)) return '逛';
+  return '玩';
+}
+
+function toIsoTime(value) {
+  const text = String(value || '').trim();
+  if (!text) return new Date().toISOString();
+  const d = new Date(text);
+  if (!Number.isNaN(d.getTime())) return d.toISOString();
+  return new Date().toISOString();
+}
+
+function deriveNoteId(row) {
+  const folder = String(row.image_folder || '').trim();
+  const fromFolder = folder ? path.basename(folder.replace(/\\+$/, '')) : '';
+  if (fromFolder) return fromFolder;
+
+  const hash = crypto
+    .createHash('sha1')
+    .update(`${row.title || ''}|${row.author || ''}|${row.publish_time || ''}|${row.content || ''}`)
+    .digest('hex');
+  return `slim_${hash.slice(0, 24)}`;
+}
+
+function resolveImageFolder(row, noteId) {
+  const rawFolder = String(row.image_folder || '').trim();
+  if (rawFolder && fs.existsSync(rawFolder) && fs.statSync(rawFolder).isDirectory()) {
+    return rawFolder;
+  }
+
+  const fallback = path.join(XHS_IMAGES_ROOT, noteId);
+  if (fs.existsSync(fallback) && fs.statSync(fallback).isDirectory()) {
+    return fallback;
+  }
+
+  return null;
+}
+
+function parseImageFiles(folderPath) {
+  if (!folderPath) return [];
+  const names = fs.readdirSync(folderPath)
+    .filter((name) => /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(name))
+    .sort((a, b) => a.localeCompare(b, 'en'));
+
+  return names.map((name) => path.join(folderPath, name));
+}
+
+function toPublicImageUrl(noteId, absPath) {
+  return `/xhs-images/${noteId}/${path.basename(absPath)}`;
+}
+
+function normalizeUsername(author, noteId) {
+  const name = String(author || '').trim();
+  if (name) return name.slice(0, 80);
+  return `xhs_user_${noteId.slice(-8) || 'unknown'}`;
+}
+
+function inferLocationName(row, city) {
+  const normalizedCity = String(city || '').trim();
+  return normalizedCity || '';
+}
+
+async function ensureAuthorUser(client, username, createdAt) {
+  const found = await client.query('SELECT id FROM users WHERE username = $1 LIMIT 1', [username]);
+  if (found.rows.length > 0) return found.rows[0].id;
+
+  const inserted = await client.query(
+    `INSERT INTO users (username, nickname, avatar, bio, created_at)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id`,
+    [username, username, null, null, createdAt]
+  );
+  return inserted.rows[0].id;
+}
+
+async function clearOldXhsPosts(pool) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`
+      DELETE FROM post_images
+      WHERE post_id IN (
+        SELECT id FROM posts WHERE source_platform = 'xiaohongshu'
+      )
+    `);
+    await client.query(`DELETE FROM posts WHERE source_platform = 'xiaohongshu'`);
+    await client.query('COMMIT');
+    console.log('🧹 已清理旧小红书帖子数据');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function upsertPost(client, row) {
+  const noteId = deriveNoteId(row);
+  const city = inferCity(row);
+  const center = CITY_CENTER[city] || CITY_CENTER['南京'];
+  const createdAt = toIsoTime(row.publish_time);
+  const username = normalizeUsername(row.author, noteId);
+  const userId = await ensureAuthorUser(client, username, createdAt);
+
+  const imageFolder = resolveImageFolder(row, noteId);
+  const imageFiles = parseImageFiles(imageFolder);
+  const imageUrls = imageFiles.map((f) => toPublicImageUrl(noteId, f));
+
+  const title = normalizeText(row.title) || null;
+  const content = normalizeText(row.content);
+  const tags = normalizeTags(row.tags);
+  const mood = inferMood(row);
+  const category = inferCategory(row);
+  const locationName = inferLocationName(row, city);
+
+  const postResult = await client.query(
+    `INSERT INTO posts (
+       user_id, source_platform, source_note_id, title, content,
+       image_url, image_count, image_urls, mood, category, tags,
+       city, district, location_name, lat, lng, geo_confidence, is_public, created_at
+     ) VALUES (
+       $1, 'xiaohongshu', $2, $3, $4,
+       $5, $6, $7::jsonb, $8, $9, $10,
+       $11, $12, $13, $14, $15, $16, 1, $17
+     )
+     ON CONFLICT (source_platform, source_note_id)
+     DO UPDATE SET
+       user_id = EXCLUDED.user_id,
+       title = EXCLUDED.title,
+       content = EXCLUDED.content,
+       image_url = EXCLUDED.image_url,
+       image_count = EXCLUDED.image_count,
+       image_urls = EXCLUDED.image_urls,
+       mood = EXCLUDED.mood,
+       category = EXCLUDED.category,
+       tags = EXCLUDED.tags,
+       city = EXCLUDED.city,
+       district = EXCLUDED.district,
+       location_name = EXCLUDED.location_name,
+       lat = EXCLUDED.lat,
+       lng = EXCLUDED.lng,
+       geo_confidence = EXCLUDED.geo_confidence,
+       created_at = EXCLUDED.created_at
+     RETURNING id, xmax = 0 AS inserted`,
+    [
+      userId,
+      noteId,
+      title,
+      content,
+      imageUrls[0] || null,
+      Math.max(imageUrls.length, imageUrls[0] ? 1 : 0),
+      JSON.stringify(imageUrls),
+      mood,
+      category,
+      tags || null,
+      city,
+      null,
+      locationName,
+      center.lat,
+      center.lng,
+      imageFiles.length > 0 ? 'image_folder' : 'city_fallback',
+      createdAt
+    ]
+  );
+
+  const postId = postResult.rows[0].id;
+  const inserted = postResult.rows[0].inserted;
+
+  await client.query('DELETE FROM post_images WHERE post_id = $1', [postId]);
+  for (let i = 0; i < imageUrls.length; i += 1) {
+    await client.query(
+      `INSERT INTO post_images (post_id, image_index, image_url, original_path)
+       VALUES ($1, $2, $3, $4)`,
+      [postId, i, imageUrls[i], imageFiles[i] || null]
+    );
+  }
+
+  return { noteId, inserted, postId };
+}
+
+async function run() {
+  if (!fs.existsSync(CSV_PATH)) {
+    throw new Error(`CSV 文件不存在: ${CSV_PATH}`);
+  }
+
+  const csv = fs.readFileSync(CSV_PATH, 'utf8');
+  const rows = parseCsv(csv);
+  if (!rows.length) {
+    throw new Error('CSV 无有效数据');
+  }
+
+  console.log(`📥 待导入 slim CSV: ${rows.length} 条`);
+  console.log(`📄 CSV 路径: ${CSV_PATH}`);
+
+  const pool = getPgPool();
+
+  try {
+    if (RESET_BEFORE_IMPORT) {
+      await clearOldXhsPosts(pool);
+    }
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows[i];
+      const client = await pool.connect();
+
+      try {
+        await client.query('BEGIN');
+        const result = await upsertPost(client, row);
+        await client.query('COMMIT');
+
+        if (result.inserted) insertedCount += 1;
+        else updatedCount += 1;
+
+        console.log(`✅ [${i + 1}/${rows.length}] note_id=${result.noteId} -> post_id=${result.postId}`);
+      } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(`❌ [${i + 1}/${rows.length}] 导入失败:`, error.message);
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+
+    console.log(`🎉 导入完成: 新增 ${insertedCount}，更新 ${updatedCount}`);
+  } finally {
+    await closePgPool();
+  }
+}
+
+run().catch((error) => {
+  console.error('❌ 导入 slim CSV 失败:', error);
+  process.exit(1);
+});

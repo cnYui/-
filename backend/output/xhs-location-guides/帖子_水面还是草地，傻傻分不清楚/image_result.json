@@ -1,0 +1,23 @@
+{
+  "noteId": "655b31fd0000000033005f2d",
+  "title": "水面还是草地，傻傻分不清楚",
+  "mode": "image",
+  "locationGuides": [
+    {
+      "location": "青山湖水上森林",
+      "city": "杭州",
+      "suggestions": [
+        "注意观察地面，避免误将水面当成草地"
+      ],
+      "evidence": [
+        "结果狗子把水面当成了草地"
+      ],
+      "confidence": 0.8
+    }
+  ],
+  "ocrTexts": [
+    "结果狗子把水面当成了草地"
+  ],
+  "summary": "帖子主要分享了在杭州青山湖水上森林的趣事，提醒游客注意地面，避免误判水面为草地。",
+  "uncertain": []
+}

@@ -10,6 +10,26 @@ let travelModeBehaviorBound = false;
 let progressRequestInFlight = false;
 let lastDiaryQueueLogKey = null;
 
+function syncMapTravelRoute(travelData) {
+    if (window.MapTravelRenderer?.syncTravelRoute) {
+        window.MapTravelRenderer.syncTravelRoute(travelData);
+    }
+}
+
+function clearMapTravelRoute() {
+    if (window.MapTravelRenderer?.clearTravelRoute) {
+        window.MapTravelRenderer.clearTravelRoute();
+    }
+}
+
+function formatSpotDurationSeconds(spot) {
+    const duration = Number(spot?.duration);
+    if (!Number.isFinite(duration) || duration <= 0) {
+        return '15秒';
+    }
+    return `${Math.round(duration)}秒`;
+}
+
 function getCompletionNoticeKey(planId) {
     return `travel_completed_notified_${planId}`;
 }
@@ -29,6 +49,7 @@ function resetToTravelStartUI() {
     const ongoingUI = document.getElementById('travel-ongoing-ui');
     if (startUI) startUI.style.display = 'block';
     if (ongoingUI) ongoingUI.style.display = 'none';
+    clearMapTravelRoute();
 }
 
 function stopProgressPolling() {
@@ -258,6 +279,7 @@ function showTravelProgress(travelData) {
     
     // 保存当前旅行计划
     currentTravelPlan = travelData;
+    syncMapTravelRoute(currentTravelPlan);
     
     // 动态生成 Todo 卡片
     renderTravelCards(travelData);
@@ -316,7 +338,7 @@ function renderTravelCards(travelData) {
                     if (isCompleted) {
                         statusIcon = '<i class="ri-check-line"></i>';
                         statusClass = 'completed';
-                        timeText = `已完成 • 耗时 ${spot.duration}分钟`;
+                        timeText = `已完成 • 耗时 ${formatSpotDurationSeconds(spot)}`;
                     } else if (isActive) {
                         statusIcon = '<i class="ri-map-pin-user-fill"></i>';
                         statusClass = '';
@@ -324,7 +346,7 @@ function renderTravelCards(travelData) {
                     } else {
                         statusIcon = '<i class="ri-arrow-right-line"></i>';
                         statusClass = '';
-                        timeText = `待前往 • 预计 ${spot.duration}分钟`;
+                        timeText = `待前往 • 预计 ${formatSpotDurationSeconds(spot)}`;
                     }
                     
                     return `
@@ -389,14 +411,14 @@ function updateTravelCardStatuses(progressData) {
         textEl.style.color = isActive ? 'var(--accent-blue)' : '';
 
         if (isCompleted) {
-            timeEl.textContent = `已完成 • 耗时 ${spot.duration}分钟`;
+            timeEl.textContent = `已完成 • 耗时 ${formatSpotDurationSeconds(spot)}`;
         } else if (isActive) {
             const remainingText = timeEl.textContent.includes('还剩') || timeEl.textContent.includes('预计还需')
                 ? timeEl.textContent
                 : '正在游览中...';
             timeEl.textContent = remainingText;
         } else {
-            timeEl.textContent = `待前往 • 预计 ${spot.duration}分钟`;
+            timeEl.textContent = `待前往 • 预计 ${formatSpotDurationSeconds(spot)}`;
         }
     });
 }
@@ -474,6 +496,7 @@ function updateTravelUI(progressData) {
     if (currentTravelPlan) {
         currentTravelPlan = { ...currentTravelPlan, ...progressData };
         updateTravelCardStatuses(progressData);
+        syncMapTravelRoute(currentTravelPlan);
     }
 }
 
@@ -484,6 +507,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const userId = getCurrentUserId();
     if (!userId) {
         console.log('用户未登录，跳过旅行状态检查');
+        clearMapTravelRoute();
         return;
     }
     

@@ -56,9 +56,10 @@ function inferCategoryFromText(text = '') {
  */
 router.post('/', requireAuthenticatedUser, async (req, res) => {
     try {
-        const { planId, content, imageUrl, mood, city, district, locationName, lat, lng } = req.body
+        const { planId, title, content, imageUrl, mood, city, district, locationName, lat, lng, visitTime } = req.body
         const userId = getAuthenticatedUserId(req)
-        const category = inferCategoryFromText(content || '')
+        const category = inferCategoryFromText(`${title || ''} ${content || ''}`)
+        const createdAt = visitTime ? new Date(visitTime).toISOString() : new Date().toISOString()
 
         if (!userId || !city || lat === undefined || lng === undefined) {
             return res.status(400).json({ success: false, error: '缺少必要参数' })
@@ -66,12 +67,13 @@ router.post('/', requireAuthenticatedUser, async (req, res) => {
 
         const pool = getPgPool()
         const insert = await pool.query(`
-            INSERT INTO posts (user_id, plan_id, content, image_url, image_count, image_urls, mood, category, city, district, location_name, lat, lng)
-            VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13)
+            INSERT INTO posts (user_id, plan_id, title, content, image_url, image_count, image_urls, mood, category, city, district, location_name, lat, lng, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING *
         `, [
             userId,
             planId || null,
+            title || null,
             content || '',
             imageUrl || null,
             imageUrl ? 1 : 0,
@@ -82,7 +84,8 @@ router.post('/', requireAuthenticatedUser, async (req, res) => {
             district || null,
             locationName || null,
             toNumber(lat),
-            toNumber(lng)
+            toNumber(lng),
+            createdAt
         ])
 
         const post = mapPostRecord(insert.rows[0])

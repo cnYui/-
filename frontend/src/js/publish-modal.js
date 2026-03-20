@@ -1,7 +1,7 @@
 // 发布悬浮窗控制
 import { apiFormRequest, apiJsonRequest } from './utils/api.js';
 import { getAuthUserId } from './utils/auth.js';
-import { showToast } from './utils/helpers.js';
+import { hideLoading, showLoading, showToast } from './utils/helpers.js';
 
 let currentLocation = null; // 当前位置信息
 const AMAP_WEB_KEY = 'eff8ab024dd806b392d1216eb0f7abdb';
@@ -25,6 +25,9 @@ const STANDARD_PUBLISH_MENU_HTML = `
         </div>
         <div class="menu-btn btn-text" onclick="openTextEditor()">
             <i class="ri-edit-box-line"></i> 写文字
+        </div>
+        <div class="menu-btn" style="background:#fff; color:#000;" onclick="openSavedRecordsPage()">
+            <i class="ri-folder-open-line"></i> 查看记录
         </div>
         <div class="menu-btn btn-cancel" onclick="closePublishModal()">
             取消
@@ -99,9 +102,14 @@ const STANDARD_IMAGE_EDITOR_HTML = `
             </div>
         </div>
 
-        <button class="editor-publish-btn" onclick="publishImageNote()">
-            <i class="ri-send-plane-fill"></i> 发布笔记
-        </button>
+        <div style="display:flex; gap:12px; margin-top:18px;">
+            <button class="editor-publish-btn" onclick="saveDraftRecord()" style="flex:1; background:#fff; color:#000; font-size:14px; padding:14px 10px; white-space:nowrap; line-height:1.2;">
+                <i class="ri-save-3-fill"></i> 保存记录
+            </button>
+            <button class="editor-publish-btn" onclick="publishImageNote()" style="flex:1; margin-top:0; font-size:14px; padding:14px 10px; white-space:nowrap; line-height:1.2;">
+                <i class="ri-send-plane-fill"></i> 发布笔记
+            </button>
+        </div>
     </div>
 `;
 
@@ -123,6 +131,99 @@ function ensureHiddenFileInput(id, attrs) {
     });
 
     input.style.display = 'none';
+}
+
+function buildEditorPayload(targetLocation, imageUrl = null) {
+    const title = document.getElementById('imageEditorTitle')?.value || '';
+    const content = document.getElementById('imageEditorContent')?.value || '';
+    const visitTime = document.getElementById('imageEditorVisitTime')?.value || '';
+    const mood = document.getElementById('imageEditorMood')?.value || '';
+    const locationInputValue = document.getElementById('imageEditorLocation')?.value?.trim() || '';
+
+    return {
+        title: title.trim(),
+        content: content.trim(),
+        visitTime,
+        mood,
+        locationInputValue,
+        imageUrl,
+        sourceMode: activePublishMode,
+        city: targetLocation.city,
+        district: targetLocation.district,
+        locationName: locationInputValue || targetLocation.locationName,
+        lat: targetLocation.lat,
+        lng: targetLocation.lng
+    };
+}
+
+function validateEditorForm() {
+    const title = document.getElementById('imageEditorTitle')?.value || '';
+    const content = document.getElementById('imageEditorContent')?.value || '';
+    const visitTime = document.getElementById('imageEditorVisitTime')?.value || '';
+    const mood = document.getElementById('imageEditorMood')?.value || '';
+    const locationInputValue = document.getElementById('imageEditorLocation')?.value?.trim() || '';
+
+    if (!title.trim()) {
+        throw new Error('请填写帖子标题');
+    }
+
+    if (!content.trim()) {
+        throw new Error('请填写帖子内容');
+    }
+
+    if (!visitTime) {
+        throw new Error('请选择发布时间');
+    }
+
+    if (!mood) {
+        throw new Error('请选择发布表情');
+    }
+
+    if (!locationInputValue) {
+        throw new Error('请填写发布地点');
+    }
+
+    if (activePublishMode === 'image' && selectedImageFiles.length === 0) {
+        throw new Error('请先选择至少一张图片');
+    }
+
+    return { title, content, visitTime, mood, locationInputValue };
+}
+
+async function maybeUploadSelectedImage() {
+    if (selectedImageFiles.length === 0) return null;
+    return uploadImageFile(selectedImageFiles[0]);
+}
+
+async function createLocationChatroom(post, targetLocation) {
+    const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
+        method: 'POST',
+        body: {
+            postId: post.id,
+            city: targetLocation.city,
+            district: targetLocation.district,
+            lat: targetLocation.lat,
+            lng: targetLocation.lng,
+            radius: 1000
+        }
+    });
+
+    if (chatroomResult.success) {
+        const matchCount = chatroomResult.data.matchedUsers?.length || 0;
+        if (chatroomResult.data.isReused) {
+            showToast(`发布成功！已进入同一聊天室，发现 ${matchCount} 位附近的旅行者正在续聊`, 'success');
+        } else if (matchCount > 0) {
+            showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`, 'success');
+        } else {
+            showToast('发布成功！你是第一个在这里发帖的人~', 'success');
+        }
+    }
+
+    return chatroomResult;
+}
+
+function openSavedRecordsPage() {
+    window.location.href = '/pages/mobile/saved-post-records.html';
 }
 
 function ensurePublishModalTemplate() {
@@ -452,12 +553,38 @@ let selectedImages = [];
 let selectedImageFiles = [];
 let activePublishMode = 'image';
 
+function getDefaultTitleFromContent(content = '') {
+    const value = String(content || '').trim().replace(/\s+/g, ' ');
+    return value ? value.slice(0, 18) : '';
+}
+
+function getCurrentLocalDateTimeValue() {
+    const now = new Date();
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function populatePublishEditorFields({ title = '', content = '', visitTime = '', mood = '', locationName = '' } = {}) {
+    const titleInput = document.getElementById('imageEditorTitle');
+    const contentInput = document.getElementById('imageEditorContent');
+    const visitTimeInput = document.getElementById('imageEditorVisitTime');
+    const moodInput = document.getElementById('imageEditorMood');
+    const locationInput = document.getElementById('imageEditorLocation');
+
+    if (titleInput) titleInput.value = title;
+    if (contentInput) contentInput.value = content;
+    if (visitTimeInput) visitTimeInput.value = visitTime || getCurrentLocalDateTimeValue();
+    if (moodInput) moodInput.value = mood;
+    if (locationInput) locationInput.value = locationName;
+}
+
 function openPublishEditor(mode = 'image') {
     activePublishMode = mode;
 
     if (mode === 'text') {
         selectedImages = [];
         selectedImageFiles = [];
+        renderEditorImages();
     }
 
     const modal = document.getElementById('imageEditorModal');
@@ -485,28 +612,50 @@ function openPublishEditor(mode = 'image') {
 }
 
 async function resolvePublishLocation(locationInputValue) {
+    console.log('🔍 开始解析发布地点:', locationInputValue)
+    
     if (selectedLocation && selectedLocation.locationName === locationInputValue) {
+        console.log('  ✅ 使用已选择的地点:', selectedLocation)
         return selectedLocation;
     }
 
     await ensurePlaceSearchReady();
     return new Promise((resolve, reject) => {
+        console.log('  📡 调用高德地点搜索API...')
         placeSearch.search(locationInputValue, (status, result) => {
+            console.log('  📥 高德API响应:', { status, result })
+            
             const pois = result?.poiList?.pois || [];
+            console.log(`  找到 ${pois.length} 个POI`)
+            
             const poi = pois.find((item) => item?.location) || null;
 
             if (status !== 'complete' || !poi) {
+                console.error('  ❌ 地点搜索失败')
                 reject(new Error('请填写可识别的地理位置，或从联想列表中选择'));
                 return;
             }
 
-            resolve({
+            console.log('  📍 选中的POI:', poi)
+            console.log('    - 名称:', poi.name)
+            console.log('    - 城市:', poi.cityname)
+            console.log('    - 区县:', poi.adname)
+            console.log('    - 省份:', poi.pname)
+            console.log('    - 坐标:', poi.location)
+
+            const resolvedCity = poi.cityname || poi.pname || '未知城市'
+            console.log(`  🏙️  最终城市: ${resolvedCity}`)
+
+            const locationData = {
                 lat: poi.location.lat,
                 lng: poi.location.lng,
-                city: poi.cityname || '未知城市',
+                city: resolvedCity,
                 district: poi.adname || '',
                 locationName: poi.name || locationInputValue
-            });
+            }
+            
+            console.log('  ✅ 地点解析完成:', locationData)
+            resolve(locationData);
         });
     });
 }
@@ -661,6 +810,11 @@ function addImageToEditor(imageData) {
 function renderEditorImages() {
     const imagesSection = document.getElementById('editorImagesSection');
     if (!imagesSection) return;
+
+    if (activePublishMode === 'text') {
+        imagesSection.innerHTML = '';
+        return;
+    }
     
     imagesSection.innerHTML = '';
     
@@ -724,83 +878,51 @@ function closeImageEditor() {
         modal.classList.remove('show');
         setTimeout(() => {
             modal.style.display = 'none';
-            // 清空数据
             selectedImages = [];
             selectedImageFiles = [];
+            selectedLocation = null;
             const titleInput = document.getElementById('imageEditorTitle');
             const contentInput = document.getElementById('imageEditorContent');
+            const visitTimeInput = document.getElementById('imageEditorVisitTime');
+            const moodInput = document.getElementById('imageEditorMood');
+            const locationInput = document.getElementById('imageEditorLocation');
             if (titleInput) titleInput.value = '';
             if (contentInput) contentInput.value = '';
+            if (visitTimeInput) visitTimeInput.value = '';
+            if (moodInput) moodInput.value = '';
+            if (locationInput) locationInput.value = '';
         }, 300);
     }
 }
 
 // 发布图片笔记
 async function publishImageNote() {
-    const title = document.getElementById('imageEditorTitle')?.value || '';
-    const content = document.getElementById('imageEditorContent')?.value || '';
-    const visitTime = document.getElementById('imageEditorVisitTime')?.value || '';
-    const mood = document.getElementById('imageEditorMood')?.value || '';
-    const locationInputValue = document.getElementById('imageEditorLocation')?.value?.trim() || '';
-
-    if (!title.trim()) {
-        showToast('请填写帖子标题', 'error');
-        return;
-    }
-
-    if (!content.trim()) {
-        showToast('请填写帖子内容', 'error');
-        return;
-    }
-
-    if (!visitTime) {
-        showToast('请选择发布时间', 'error');
-        return;
-    }
-
-    if (!mood) {
-        showToast('请选择发布表情', 'error');
-        return;
-    }
-
-    if (!locationInputValue) {
-        showToast('请填写发布地点', 'error');
-        return;
-    }
-
-    if (activePublishMode === 'image' && selectedImageFiles.length === 0) {
-        showToast('请先选择至少一张图片', 'error');
-        return;
-    }
-    
     const userId = getPostUserId();
     if (!userId) {
         showToast('请先登录', 'error');
         window.location.href = '/pages/mobile/login.html';
         return;
     }
-    
-    const targetLocation = await resolvePublishLocation(locationInputValue);
-    
-    try {
-        let imageUrl = null;
-        if (selectedImageFiles.length > 0) {
-            imageUrl = await uploadImageFile(selectedImageFiles[0]);
-        }
 
-        // 1. 发布贴文
+    try {
+        const form = validateEditorForm();
+        const targetLocation = await resolvePublishLocation(form.locationInputValue);
+        const imageUrl = await maybeUploadSelectedImage();
+        const payload = buildEditorPayload(targetLocation, imageUrl);
+
         const postResult = await apiJsonRequest('/posts', {
             method: 'POST',
             body: {
-                content: `${title}\n\n${content}`,
-                imageUrl,
-                mood,
-                city: targetLocation.city,
-                district: targetLocation.district,
-                locationName: locationInputValue || targetLocation.locationName,
-                lat: targetLocation.lat,
-                lng: targetLocation.lng,
-                visitTime
+                title: payload.title,
+                content: payload.content,
+                imageUrl: payload.imageUrl,
+                mood: payload.mood,
+                city: payload.city,
+                district: payload.district,
+                locationName: payload.locationName,
+                lat: payload.lat,
+                lng: payload.lng,
+                visitTime: payload.visitTime
             }
         });
         
@@ -808,39 +930,77 @@ async function publishImageNote() {
             throw new Error(postResult.error || '发布失败');
         }
         
-        console.log('✅ 贴文发布成功:', postResult.data);
         renderPostMarkerOnMap(postResult.data);
-        
-        // 2. 创建聊天室
-        const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
-            method: 'POST',
-            body: {
-                postId: postResult.data.id,
-                city: targetLocation.city,
-                district: targetLocation.district,
-                lat: targetLocation.lat,
-                lng: targetLocation.lng,
-                radius: 1000
-            }
-        });
-        
-        if (chatroomResult.success) {
-            console.log('✅ 聊天室创建成功:', chatroomResult.data);
-            const matchCount = chatroomResult.data.matchedUsers?.length || 0;
-            if (matchCount > 0) {
-                showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`, 'success');
-            } else {
-                showToast('发布成功！你是第一个在这里发帖的人~', 'success');
-            }
-        }
+        await createLocationChatroom(postResult.data, targetLocation);
         
         closeImageEditor();
-        // 跳转到火花页面
         window.location.href = '/pages/mobile/spark.html';
         
     } catch (error) {
         console.error('❌ 发布失败:', error);
         showToast('发布失败: ' + error.message, 'error');
+    }
+}
+
+async function saveDraftRecord() {
+    const userId = getPostUserId();
+    if (!userId) {
+        showToast('请先登录', 'error');
+        window.location.href = '/pages/mobile/login.html';
+        return;
+    }
+
+    try {
+        console.log('💾 开始保存记录...')
+        const form = validateEditorForm();
+        console.log('  ✅ 表单验证通过')
+        
+        showLoading('正在保存记录...');
+        
+        console.log('  🔍 解析地点:', form.locationInputValue)
+        const targetLocation = await resolvePublishLocation(form.locationInputValue);
+        console.log('  ✅ 地点解析完成:', targetLocation)
+        
+        console.log('  📤 上传图片...')
+        const originalImageUrl = await maybeUploadSelectedImage();
+        console.log('  ✅ 图片上传完成:', originalImageUrl || '无图片')
+        
+        const payload = buildEditorPayload(targetLocation, originalImageUrl);
+        console.log('  📦 构建payload:', payload)
+
+        console.log('  📡 发送保存请求...')
+        const result = await apiJsonRequest('/saved-post-records', {
+            method: 'POST',
+            body: {
+                title: payload.title,
+                content: payload.content,
+                sourceMode: payload.sourceMode,
+                originalImageUrl: payload.imageUrl,
+                mood: payload.mood,
+                city: payload.city,
+                district: payload.district,
+                locationName: payload.locationName,
+                lat: payload.lat,
+                lng: payload.lng,
+                visitTime: payload.visitTime
+            }
+        });
+
+        hideLoading();
+
+        if (!result?.success) {
+            throw new Error(result?.error || '保存失败');
+        }
+
+        console.log('  ✅ 保存成功:', result.data)
+        showToast('记录已保存，去记录页手动生成 AI 图片吧', 'success');
+
+        closeImageEditor();
+        window.location.href = '/pages/mobile/saved-post-records.html';
+    } catch (error) {
+        hideLoading();
+        console.error('❌ 保存记录失败:', error);
+        showToast('保存记录失败: ' + error.message, 'error');
     }
 }
 
@@ -961,7 +1121,12 @@ function renderPostMarkerOnMap(post) {
 // 打开文字编辑器
 function openTextEditor() {
     closePublishModal();
-    openPublishEditor('text');
+    const modal = document.getElementById('textEditorModal');
+    if (!modal) return;
+    modal.style.display = 'block';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
 }
 
 // 关闭文字编辑器
@@ -996,58 +1161,15 @@ async function submitTextNote() {
     if (!currentLocation) {
         await getCurrentLocation();
     }
-    
-    try {
-        // 1. 发布贴文
-        const postResult = await apiJsonRequest('/posts', {
-            method: 'POST',
-            body: {
-                content: text,
-                city: currentLocation.city,
-                district: currentLocation.district,
-                locationName: currentLocation.locationName,
-                lat: currentLocation.lat,
-                lng: currentLocation.lng
-            }
-        });
-        
-        if (!postResult.success) {
-            throw new Error(postResult.error || '发布失败');
-        }
-        
-        console.log('✅ 贴文发布成功:', postResult.data);
-        
-        // 2. 创建聊天室
-        const chatroomResult = await apiJsonRequest('/chatrooms/create-by-location', {
-            method: 'POST',
-            body: {
-                postId: postResult.data.id,
-                city: currentLocation.city,
-                district: currentLocation.district,
-                lat: currentLocation.lat,
-                lng: currentLocation.lng,
-                radius: 1000
-            }
-        });
-        
-        if (chatroomResult.success) {
-            console.log('✅ 聊天室创建成功:', chatroomResult.data);
-            const matchCount = chatroomResult.data.matchedUsers?.length || 0;
-            if (matchCount > 0) {
-                showToast(`发布成功！发现 ${matchCount} 位附近的旅行者，快去火花页面看看吧！`, 'success');
-            } else {
-                showToast('发布成功！你是第一个在这里发帖的人~', 'success');
-            }
-        }
-        
-        closeTextEditor();
-        // 跳转到火花页面
-        window.location.href = '/pages/mobile/spark.html';
-        
-    } catch (error) {
-        console.error('❌ 发布失败:', error);
-        showToast('发布失败: ' + error.message, 'error');
-    }
+
+    closeTextEditor();
+    openPublishEditor('text');
+    populatePublishEditorFields({
+        title: getDefaultTitleFromContent(text),
+        content: text,
+        visitTime: getCurrentLocalDateTimeValue(),
+        locationName: currentLocation?.locationName || ''
+    });
 }
 
 // 初始化事件监听
@@ -1087,6 +1209,8 @@ window.handleEditorImageSelect = handleEditorImageSelect;
 window.openImageEditor = openImageEditor;
 window.closeImageEditor = closeImageEditor;
 window.publishImageNote = publishImageNote;
+window.saveDraftRecord = saveDraftRecord;
 window.openTextEditor = openTextEditor;
 window.closeTextEditor = closeTextEditor;
 window.submitTextNote = submitTextNote;
+window.openSavedRecordsPage = openSavedRecordsPage;

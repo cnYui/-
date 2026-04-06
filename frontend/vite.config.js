@@ -4,7 +4,7 @@ import { resolve } from 'path'
 export default defineConfig({
   root: 'src',
   server: {
-    port: 5173,
+    port: Number(process.env.FRONTEND_PORT || 5175),
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

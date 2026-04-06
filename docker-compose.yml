@@ -1,17 +1,15 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:latest
-    container_name: mingri-postgres
+    image: postgres:16
+    container_name: mingri-postgres-5433
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: mingri_lvtu
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mingri_postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -20,5 +18,5 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  mingri_postgres_data:
     driver: local
